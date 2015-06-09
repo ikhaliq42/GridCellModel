@@ -70,6 +70,10 @@ namespace nest
         const Name ctr_x("ctr_x");
         const Name ctr_y("ctr_y");
         const Name field_size("field_size");
+		const Name border_start_x("border_start_x");
+		const Name border_start_y("border_start_y");
+		const Name border_end_x("border_end_x");
+		const Name border_end_y("border_end_y");
 
     } // namespace names
 
