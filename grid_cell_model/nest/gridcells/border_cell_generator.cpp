@@ -59,10 +59,10 @@ void border_cell_generator::Parameters_::get(DictionaryDatum &d) const
     //def<double>(d,  nest::names::ctr_x,      ctr_x);
     //def<double>(d,  nest::names::ctr_y,      ctr_y);
 
-	def<double>(d, nest::names::border_start_x, border_start_x);
-	def<double>(d, nest::names::border_start_y, border_start_y);
-	def<double>(d, nest::names::border_end_x, border_end_x);
-	def<double>(d, nest::names::border_end_y, border_end_y);
+   def<double>(d, nest::names::border_start_x, border_start_x);
+   def<double>(d, nest::names::border_start_y, border_start_y);
+   def<double>(d, nest::names::border_end_x, border_end_x);
+   def<double>(d, nest::names::border_end_y, border_end_y);
 
     def<double>(d,  nest::names::field_size, field_size);
     def<vecType>(d, nest::names::rat_pos_x,  rat_pos_x);
@@ -75,12 +75,12 @@ void border_cell_generator::Parameters_::set(const DictionaryDatum& d)
 {
     updateValue<double>(d,  nest::names::rate, rate);
     //updateValue<double>(d,  nest::names::ctr_x, ctr_x);
-	//updateValue<double>(d, nest::names::ctr_y, ctr_y);
+    //updateValue<double>(d, nest::names::ctr_y, ctr_y);
 
-	updateValue<double>(d, nest::names::border_start_x, border_start_x);
-	updateValue<double>(d, nest::names::border_start_y, border_start_y);
-	updateValue<double>(d, nest::names::border_end_x, border_end_x);
-	updateValue<double>(d, nest::names::border_end_y, border_end_y);
+    updateValue<double>(d, nest::names::border_start_x, border_start_x);
+    updateValue<double>(d, nest::names::border_start_y, border_start_y);
+    updateValue<double>(d, nest::names::border_end_x, border_end_x);
+    updateValue<double>(d, nest::names::border_end_y, border_end_y);
 
     updateValue<double>(d,  nest::names::field_size, field_size);
     updateValue<vecType>(d, nest::names::rat_pos_x,  rat_pos_x);
@@ -201,20 +201,16 @@ void border_cell_generator::update(Time const & T, const long_t from, const long
     }
 }
 
-
-inline
 double border_cell_generator::gaussianFunction()
 {
     //double dist_x = P_.rat_pos_x[pos_it] - P_.ctr_x;
     //double dist_y = P_.rat_pos_y[pos_it] - P_.ctr_y;
     //return exp(-(dist_x*dist_x + dist_y*dist_y) / 2. / (P_.field_size*P_.field_size));
 
-	double dist = minimum_distance_to_line(P_.border_start_x, P_.border_start_y, P_.border_end_x, P_.border_end_y, P_.rat_pos_x[pos_it], P_.rat_pos_y[pos_it]);
-	return exp(-(dist*dist) / 2. / (P_.field_size*P_.field_size));
+    double dist = minimum_distance_to_line(P_.border_start_x, P_.border_start_y, P_.border_end_x, P_.border_end_y, P_.rat_pos_x[pos_it], P_.rat_pos_y[pos_it]);
+    return exp(-(dist*dist) / 2. / (P_.field_size*P_.field_size));
 }
 
-
-inline
 void border_cell_generator::setFiringRate()
 {
     // rate is in Hz, dt in ms, so we have to convert from s to ms
@@ -222,36 +218,34 @@ void border_cell_generator::setFiringRate()
     poisson_dev_.set_lambda(sim_dt * P_.rate * 1e-3 * gaussianFunction());
 }
 
-double border_cell_generator::squared_distance(Eigen::Vector2d a, Eigen::Vector2d b) {
-	Eigen::Vector2d c = b - a;
-	return c.dot(c);
+double border_cell_generator::squared_distance(double a_x, double a_y, double b_x, double b_y) {
+   //Eigen::Vector2d c = b - a;
+   return a_x * b_x + a_y * b_y;
 }
 
-double border_cell_generator::distance(Eigen::Vector2d a, Eigen::Vector2d b) {
-	return sqrt(squared_distance(a, b));
+double border_cell_generator::distance(double a_x, double a_y, double b_x, double b_y) {
+   return sqrt(squared_distance(a_x, a_y, b_x, b_y));
 }
 
-double border_cell_generator::minimum_distance_to_line(double lStart_x, double lStart_y, double lEnd_x, double lEnd_y, double p_x, double p_y) {
+double border_cell_generator::minimum_distance_to_line(double start_x, double start_y, double end_x, double end_y, double pnt_x, double pnt_y) {
 
 	// function to calculate the minimum distance between a point and a straight line segment
 	// adapted from:
 	// http://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 
-	Eigen::Vector2d start(lStart_x, lStart_y);
-	Eigen::Vector2d end(lEnd_x, lEnd_y);
-	Eigen::Vector2d pnt(p_x, p_y);
 
 	// Return minimum distance between line segment and point p
-	const double d2 = squared_distance(start, end);  // i.e. |start-end|^2 -  avoid a sqrt
-	if (d2 == 0.0) return distance(pnt, start);   // start == end case
+	const double d2 = squared_distance(start_x, start_y, end_x, end_y);  // i.e. |start-end|^2 -  avoid a sqrt
+	if (d2 == 0.0) return distance(pnt_x, pnt_y, start_x, start_y);   // start == end case
 	// Consider the line extending the segment, parameterized as start + t (end - start).
 	// We find projection of point pnt onto the line. 
 	// It falls where t = [(pnt-start) . (end-start)] / |end-start|^2
-	const double t = (pnt - start).dot(end - start) / d2;
-	if (t < 0.0) return distance(pnt, start);       // Beyond the 'v' end of the segment
-	else if (t > 1.0) return distance(pnt, end);  // Beyond the 'w' end of the segment
-	const Eigen::Vector2d projection = start + t * (end - start);  // Projection falls on the segment
-	return distance(pnt, projection);
+	const double t =  (pnt_x - start_x) * (end_x - start_x) + (pnt_y - start_y) * (end_y - start_y) / d2 ;
+	if (t < 0.0) return distance(pnt_x, pnt_y, start_x, start_y);   // Beyond the 'v' end of the segment
+	else if (t > 1.0) return distance(pnt_x, pnt_y, end_x, end_y);  // Beyond the 'w' end of the segment
+	const double projection_x = start_x + t * (end_x - start_x);    // Projection falls on the segment
+	const double projection_y = start_y + t * (end_y - start_y);    // Projection falls on the segment	
+	return distance(pnt_x, pnt_y, projection_x, projection_y);
 }
 
 

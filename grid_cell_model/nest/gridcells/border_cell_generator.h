@@ -29,7 +29,7 @@
 #include "stimulating_device.h"
 #include "connection.h"
 #include "poisson_randomdev.h"
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
 
 #include "gridcells_definitions.h"
 #include "gridcells_names.h"
@@ -92,11 +92,13 @@ class border_cell_generator : public nest::Node
         /** Set the internal, actual firing rate of the poisson generator **/
         void setFiringRate();
 
-		/** Calculate the minumum distance to the border from the current rat position **/
-		double minimum_distance_to_line(double lStart_x, double lStart_y, double lEnd_x, double lEnd_y, double p_x, double p_y);
-		/** Helper functions for minumum_distance **/
-		double squared_distance(Eigen::Vector2d a, Eigen::Vector2d b);
-		double distance(Eigen::Vector2d a, Eigen::Vector2d b);
+	/** Calculate the minumum distance to the border from the current rat position **/
+	double minimum_distance_to_line(double lStart_x, double lStart_y, double lEnd_x, double lEnd_y, double p_x, double p_y);
+	/** Helper functions for minumum_distance **/
+	//double squared_distance(Eigen::Vector2d a, Eigen::Vector2d b);
+	//double distance(Eigen::Vector2d a, Eigen::Vector2d b);
+	double squared_distance(double a_x, double a_y, double b_x, double b_y);
+	double distance(double a_x, double a_y, double b_x, double b_y);
 
         // ------------------------------------------------------------
 
@@ -114,11 +116,11 @@ class border_cell_generator : public nest::Node
             static vecType rat_pos_y;  //!< Animal positions y
             static double  rat_pos_dt;  //!< Animal positions time step
 
-			// Variables defining the border (a line segment) in cm
-			static double border_start_x; //!< start of border x
-			static double border_start_y; //!< start of border y
-			static double border_end_x; //!< end of border y
-			static double border_end_y; //!< end of border y
+	    // Variables defining the border (a line segment) in cm
+	    double border_start_x; //!< start of border x
+	    double border_start_y; //!< start of border y
+	    double border_end_x; //!< end of border y
+	    double border_end_y; //!< end of border y
 
             Parameters_();      //!< Sets default parameter values
 
