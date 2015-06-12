@@ -29,7 +29,7 @@
 #include "stimulating_device.h"
 #include "connection.h"
 #include "poisson_randomdev.h"
-//#include <Eigen/Dense>
+#include <Eigen/Dense>
 
 #include "gridcells_definitions.h"
 #include "gridcells_names.h"
@@ -97,8 +97,8 @@ class border_cell_generator : public nest::Node
 	/** Helper functions for minumum_distance **/
 	//double squared_distance(Eigen::Vector2d a, Eigen::Vector2d b);
 	//double distance(Eigen::Vector2d a, Eigen::Vector2d b);
-	double squared_distance(double a_x, double a_y, double b_x, double b_y);
-	double distance(double a_x, double a_y, double b_x, double b_y);
+	double squared_distance(Eigen::Vector2d a, Eigen::Vector2d b);
+	double distance(Eigen::Vector2d a, Eigen::Vector2d b);
 
         // ------------------------------------------------------------
 
