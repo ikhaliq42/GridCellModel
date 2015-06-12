@@ -208,19 +208,27 @@ double border_cell_generator::gaussianFunction()
     //return exp(-(dist_x*dist_x + dist_y*dist_y) / 2. / (P_.field_size*P_.field_size));
 
     double dist = minimum_distance_to_line(P_.border_start_x, P_.border_start_y, P_.border_end_x, P_.border_end_y, P_.rat_pos_x[pos_it], P_.rat_pos_y[pos_it]);
-    return exp(-(dist*dist) / 2. / (P_.field_size*P_.field_size));
+	double gaussf = exp(-(dist*dist) / 2. / (P_.field_size*P_.field_size));
+	//assert (dist >= 0.0);
+	//assert (gaussf >= 0.0);
+    return gaussf;
 }
 
 void border_cell_generator::setFiringRate()
 {
     // rate is in Hz, dt in ms, so we have to convert from s to ms
     double sim_dt = Time::get_resolution().get_ms();
-    poisson_dev_.set_lambda(sim_dt * P_.rate * 1e-3 * gaussianFunction());
+	double lambda = sim_dt * P_.rate * 1e-3 * gaussianFunction();
+	//assert(sim_dt >= 0.0);
+	//assert(P_.rate >= 0.0);
+	//assert(lambda >= 0.0);
+    poisson_dev_.set_lambda(lambda);
 }
 
-double border_cell_generator::squared_distance(double a_x, double a_y, double b_x, double b_y) {
+double squared_distance(double a_x, double a_y, double b_x, double b_y) {
    //Eigen::Vector2d c = b - a;
-   return a_x * b_x + a_y * b_y;
+   double c_x = b_x - a_x, c_y = b_y - a_y;
+   return c_x * c_x + c_y * c_y;
 }
 
 double border_cell_generator::distance(double a_x, double a_y, double b_x, double b_y) {
