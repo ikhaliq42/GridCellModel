@@ -208,9 +208,9 @@ double border_cell_generator::gaussianFunction()
     //return exp(-(dist_x*dist_x + dist_y*dist_y) / 2. / (P_.field_size*P_.field_size));
 
     double dist = minimum_distance_to_line(P_.border_start_x, P_.border_start_y, P_.border_end_x, P_.border_end_y, P_.rat_pos_x[pos_it], P_.rat_pos_y[pos_it]);
-	double gaussf = exp(-(dist*dist) / 2. / (P_.field_size*P_.field_size));
-	//assert (dist >= 0.0);
-	//assert (gaussf >= 0.0);
+    double gaussf = exp(-(dist*dist) / 2. / (P_.field_size*P_.field_size));
+    //assert (dist >= 0.0);
+    //assert (gaussf >= 0.0);
     return gaussf;
 }
 
@@ -218,10 +218,10 @@ void border_cell_generator::setFiringRate()
 {
     // rate is in Hz, dt in ms, so we have to convert from s to ms
     double sim_dt = Time::get_resolution().get_ms();
-	double lambda = sim_dt * P_.rate * 1e-3 * gaussianFunction();
-	//assert(sim_dt >= 0.0);
-	//assert(P_.rate >= 0.0);
-	//assert(lambda >= 0.0);
+    double lambda = sim_dt * P_.rate * 1e-3 * gaussianFunction();
+    //assert(sim_dt >= 0.0);
+    //assert(P_.rate >= 0.0);
+    //assert(lambda >= 0.0);
     poisson_dev_.set_lambda(lambda);
 }
 
