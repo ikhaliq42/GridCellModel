@@ -138,6 +138,11 @@ class ParameterSelector(object):
         self.parser.add_argument("--ipc_max_rate", type=float, help="I place cells max. firing rate (Hz).")
         self.parser.add_argument("--ipc_weight", type=float, help="Connection weight from I place cells to I cells (nS).")
 
+    def border_cells(self):
+        '''Border cell parameters.'''        
+        self.parser.add_argument("--bc_max_rate",          type=float,  help="Place cell maximal firing rate (Hz)")
+        self.parser.add_argument("--bc_field_std",         type=float,  help="Std. deviation of the Gaussian specifying the distance response (cm)")        
+
     def synapse_properties(self):
         '''Properties of synapses.'''
         self.parser.add_argument("--tau_AMPA",        type=float,  help="Mean of AMPA synaptic conductance time constant (ms)")

@@ -66,13 +66,16 @@ class NestGridCellNetwork(GridCellNetwork):
         self._placeCellsLoaded = False
         self._i_placeCellsLoaded = False
 
+        # for place cells
         self.PC = []
-        self.PC_start = []
-
+        self.PC_start = []		
         self.IPC = []
         self.IPCHelper = None
         self.NIPC = None
-
+		
+		# for border cells
+		self.border_cells = []
+		
         self._initNESTKernel()
         self._constructNetwork()
         self._initStates()
@@ -164,6 +167,9 @@ class NestGridCellNetwork(GridCellNetwork):
             params={'receptor_type': self.e_receptors['GABA_A']})
         nest.CopyModel(
             'static_synapse', 'PC_AMPA',
+            params={'receptor_type': self.e_receptors['AMPA']})
+		nest.CopyModel(
+            'static_synapse', 'BC_AMPA',
             params={'receptor_type': self.e_receptors['AMPA']})
 
         # Connect E-->I and I-->E
@@ -720,6 +726,46 @@ class NestGridCellNetwork(GridCellNetwork):
                 else:
                     print("Target not in I_pop!")
         return W
+		
+	def create_border_cells(self, b_starts)
+	
+	    '''Simple function to create border cells. 
+		   Border start coordinates are specified by the list of tuples in 
+		   b_starts. They are assumed to be end-to-end straight lines.
+		'''
+		
+		# create the four border cells
+	    self.border_cells = nest.Create("border_cell_generator", len(b_starts))
+		
+		# set border cell parameters
+		nest.SetStatus(border_cells, {"rate": self.no.bc_max_rate})
+		nest.SetStatus(border_cells, {"field_size": self.no.bc_field_std})
+		
+		# derive border end points
+		b_ends = []
+		n = len(border_starts)
+		for i in range(n-1):
+			b_ends[i] = b_starts[i+1][0], b_starts[i+1][1]
+		b_ends[n] = b_starts[0][0], b_starts[0][1]
+		
+		# set the borders
+		for i in range(len(border_starts)):
+		    nest.SetStatus([border_cells[i]], {"border_start_x": b_starts[i][0],
+											 "border_start_y": b_starts[i][1]})
+            nest.SetStatus([border_cells[i]], {"border_end_x": b_ends[i], 
+											   "border_end_y": b_ends[i]})
+		
+	def connect_border_cells(self, W)	
+		''' connect border cells to the excitatory grid cell population
+			according to the weightings matrix defined by W
+		'''
+		for i in range(len(border_cells)):
+				for j in range(len(W)):
+					nest.Connect(	b[i], 
+									E_pop[j], 
+									W[i,j], delay=self.no.delay, 
+									model='PC_AMPA')
+
 
     ###########################################################################
     #                                   Other

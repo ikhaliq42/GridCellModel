@@ -8,6 +8,9 @@ border_cells = nest.Create("border_cell_generator",4)
 # Set intrinsic firing rates
 nest.SetStatus(border_cells, {"rate": 10.0})
 
+# Set field size
+nest.SetStatus(border_cells, {"field_size": 10.0})
+
 # Set borders of arena
 x_starts = [-50.0,  50.0,  50.0, -50.0]
 y_starts = [ 50.0,  50.0, -50.0, -50.0]

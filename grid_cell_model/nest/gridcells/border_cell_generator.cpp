@@ -44,7 +44,7 @@ double border_cell_generator::Parameters_::rat_pos_dt = 20.; // msec
 
 border_cell_generator::Parameters_::Parameters_()
     : rate(      0.0),  // pA
-      field_size(10.)   // cm 
+      field_size(0.0)   // cm 
     //  ctr_x(      .0),  // cm
     //  ctr_y(      .0),  // cm
 {}
