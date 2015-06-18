@@ -20,18 +20,18 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#$ -P inf_ndtc
+#$ -P ecdf_informatics
 #$ -cwd
 #$ -j y
 
 # Initialise environment module
 . /etc/profile.d/modules.sh
 
-module load python/2.7.5
+module load python/2.6.6
 
 
 BASE=../../
-export LOCAL_DIR=/exports/work/inf_ndtc/lsolanka
+export LOCAL_DIR=/exports/work/informatics/s1461613
 export PYTHONUSERBASE=$LOCAL_DIR/usr/local/
 
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
