@@ -2,7 +2,7 @@
 from __future__ import absolute_import, print_function, division
 
 import copy
-from ..submitting import flagparse
+from grid_cell_model.submitting import flagparse
 
 
 class DOptionParser(flagparse.FlagParser):
@@ -238,7 +238,7 @@ def getOptParser():
     s.noise()
     s.velocity_inputs()
     s.place_cells()
-    s.i_place_cells()    
+    s.i_place_cells()
     s.border_cells()
     s.synapse_properties()
     s.preferred_directions()
