@@ -244,7 +244,6 @@ double border_cell_generator::minimum_distance_to_line(double lStart_x, double l
 	Eigen::Vector2d end(lEnd_x, lEnd_y);
 	Eigen::Vector2d pnt(p_x, p_y);
 
-	// Return minimum distance between line segment and point p
 	const double d2 = squared_distance(start, end);  // i.e. |start-end|^2 -  avoid a sqrt
 	if (d2 == 0.0) return distance(pnt, start);   // start == end case
 	// Consider the line extending the segment, parameterized as start + t (end - start).
