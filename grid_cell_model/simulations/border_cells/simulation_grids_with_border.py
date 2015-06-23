@@ -5,6 +5,7 @@ simulation with initialisation and velocity place cells active (velOn==True and
 constantPosition=False). Or a simulation in which the animal holds still at a
 specified position (constantPosition==True).
 '''
+
 from __future__ import absolute_import, print_function, division
 
 import numpy as np
@@ -91,11 +92,14 @@ for trial_idx in range(len(d['trials']), o.ntrials):
     d['net_params'] = ei_net.getNetParams()  # Common settings will stay
     d.flush()
 
+    # create the border cells
+    print("Creating border cells...\n")
+    ei_net.create_border_cells([(-50.0,50.0),(50.0,50.0),(50.0,-50.0),(-50.0,-50.0)])
+
     # connect border cells according to chosen method
-    if o.border_cell_connect_method = "line method":
-        ei_net.connect_border_cells_line_method( ei_net.E_pop, 
-                                                 ei_net.border_cells,
-                                                 o.border_sigma)
+    print("Connecting border cells using line method...\n")
+    if o.border_cell_connect_method == "line":
+        ei_net.connect_border_cells_line_method(ei_net.E_pop)
 
     try:
         ei_net.simulate(o.time, printTime=o.printTime)

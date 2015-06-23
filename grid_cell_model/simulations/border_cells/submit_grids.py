@@ -2,6 +2,7 @@
 '''Submit job(s) to the cluster/workstation: grid field parameter sweeps.'''
 
 import numpy as np
+import pdb
 
 #from grid_cell_model.submitting.noise import SubmissionParser
 from grid_cell_model.submitting.base.parsers import GenericSubmissionParser
@@ -47,15 +48,6 @@ endG   = 6120.0  # nS
 
 extraIterparams = {'bumpCurrentSlope' : getBumpCurrentSlope(p['noise_sigma'],
     threshold=-np.infty)}
-#extraIterparams['bumpCurrentSlope'] = [1.0]
-
-'''
-###############################################################################
-submitParamSweep(p, startG, endG, Nvals, ENV, simRootDir, simLabel,
-                 appName, rtLimit, numCPU, blocking, timePrefix, numRepeat,
-                 dry_run, extraIterparams, rc=parser.rowcol,
-                 printout=o.printout)
-'''
 
 ac = ArgumentCreator(p, printout=False)
 
@@ -66,6 +58,7 @@ submitter = SubmitterFactory.getSubmitter(
 ac.setOption('output_dir', submitter.outputDir())
 startJobNum = 0
 numRepeat = 1
+#pdb.set_trace()
 submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
 #submitter.saveIterParams(iterparams, dimension_labels, dimensions, dry_run=dry_run)
 

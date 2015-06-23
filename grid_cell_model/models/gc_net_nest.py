@@ -13,7 +13,8 @@ from .gc_net import GridCellNetwork
 from .place_input import PlaceCellInput
 from .place_cells import UniformBoxPlaceCells
 from ..data_storage import DataStorage
-from ..analysis.image import min_dist_to_line, scaleLine, Position2D
+from ..analysis.geometry import (scaleLine, Position2D,
+                                bounding_box_dimensions)
 
 logger = logging.getLogger(__name__)
 gcnLogger = logging.getLogger('{0}.{1}'.format(__name__,
@@ -75,7 +76,7 @@ class NestGridCellNetwork(GridCellNetwork):
         self.NIPC = None
 		
 	# for border cells
-	self.border_cells = create_border_cells(self.no.bstarts)
+	self.border_cells = []
 		
         self._initNESTKernel()
         self._constructNetwork()
@@ -739,53 +740,55 @@ class NestGridCellNetwork(GridCellNetwork):
         self.border_cells = nest.Create("border_cell_generator", len(b_starts))
 		
         # set border cell parameters
-        nest.SetStatus(border_cells, {"rate": self.no.bc_max_rate})
-        nest.SetStatus(border_cells, {"field_size": self.no.bc_field_std})
+        nest.SetStatus(self.border_cells, {"rate": self.no.bc_max_rate})
+        nest.SetStatus(self.border_cells, {"field_size": self.no.bc_field_std})
 	
         # derive border end points
-        b_ends = []
-        n = len(border_starts)
+        n = len(b_starts)
+        b_ends = range(n)
         for i in range(n-1):
             b_ends[i] = b_starts[i+1][0], b_starts[i+1][1]
-            b_ends[n] = b_starts[0][0], b_starts[0][1]
+        b_ends[n-1] = b_starts[0][0], b_starts[0][1]
 	
         # set the borders
-        for i in range(len(border_starts)):
-            nest.SetStatus([border_cells[i]], {"border_start_x": b_starts[i][0],
+        for i in range(len(b_starts)):
+            nest.SetStatus([self.border_cells[i]], {"border_start_x": b_starts[i][0],
                                                 "border_start_y": b_starts[i][1]})
-            nest.SetStatus([border_cells[i]], {"border_end_x": b_ends[i], 
-                                                       "border_end_y": b_ends[i]})
+            nest.SetStatus([self.border_cells[i]], {"border_end_x": b_ends[i][0], 
+                                                       "border_end_y": b_ends[i][1]})
 		
-    def connect_border_cells_line_method(self, g_cells, b_cells, sigma):	
+    def connect_border_cells_line_method(self, g_cells):	
         ''' 
         connect border cells to the grid cell population
         by projecting a "line" on the neural sheet corresponding to the
         actual border in the arena
         '''
+        b_cells = self.border_cells
 
         # get arena borders 
-        arena_borders = []
-        for b in b_cells:
-            b_start = Position2D(b_cells[i].border_start_x, b_cells[i].border_start_y)           
-            b_end = Position2D(b_cells[i].border_end_x, b_cells[i].border_end_y)
-            borders.append((bstart, b_end))
+        b_starts_x = nest.GetStatus(b_cells,"border_start_x")  
+        b_starts_y = nest.GetStatus(b_cells,"border_start_y")  
+        b_ends_x = nest.GetStatus(b_cells,"border_end_x")  
+        b_ends_y = nest.GetStatus(b_cells,"border_end_y")
+	b_starts = [Position2D(x,y) for x in b_starts_x for y in b_starts_y]
+	b_ends = [Position2D(x,y) for x in b_ends_x for y in b_ends_y]
+        borders = [(s, e) for s in b_starts for e in b_ends]
 
         # get arena dimensions (assumed rectangular)
-        arenaDim = bounding_box_dimensions(self, borders)
+        arenaDim = bounding_box_dimensions(b_starts)
 
         # get network dimensions
-        networkDim = self.Ne_x, self.Ne_y
+        networkDim = float(self.Ne_x), float(self.Ne_y)
 
         # get lines in network that approximately correspond to arena borders
-        network_borders = []
-        for border in borders:
-            l = arena_border_to_network_border(border, arenaDim, networkDim)
-            network_borders.append(l)
+        lines = [scaleLine(border, arenaDim, networkDim) for border in borders]
 
         # calculate weights for each border cell / arena border
         W = []
-        for i in range(len(arena_borders)):	#for each arena border
-            w = _generateGaussianBorderWeights(self, l, g_cells, sigma)
+        # how divergent the connections are, 3sigma rule --> division by 6.
+        connStdDev = self.no.gridSep / 2. / 6. 
+        for l in lines:	#for each network line
+            w = self._generateGaussianBorderWeights(l, g_cells, connStdDev)
             W.append(w)
 
         # connect border cells to grid cells
@@ -795,35 +798,6 @@ class NestGridCellNetwork(GridCellNetwork):
                                     W[i], 
                                     delay=self.no.delay, 
                                     model='PC_AMPA')
-
-
-    def _generateGaussianBorderWeights(self, l, others, sigma):
-        '''
-        This is a variation of _generateGaussianWeights, where the weights are now
-        based on the minimum distance to some line, l, represented by a tuple of
-        Position2D objects. The idea is to simulate a border-like effect.
-        Preferred directions are ignored since the "border" is static.
-        '''
-        w = []
-              
-	for p in others:    # loop through all points, p, in others  
-            # Calculate a: the minimum distance to line l for point p
-            a = min_dist_to_line(p, l)
-            # Calculate the gaussian weight to a
-            w.extend(_generateGaussianWeights(a, [p], sigma, 0.0, 0.0))
-
-        return w
-
-    def arena_border_to_network_border(self, arenaBorder, arenaDim, networkDim)
-        '''
-        This is a function which takes a line defintion in arena coordinates
-        and convert it to neuron coordinates in the network sheet
-        '''
-        s = scaleLine(arenaBorder, arenaDim, networkDim)
-        start_neuron = Position2D(s[0].x, s[0].y)
-        end_neuron = Position2D(s[1].x, s[1].y)
-	
-
 
     ###########################################################################
     #                                   Other

@@ -124,6 +124,7 @@ defaultParameters = {
 
         "bc_max_rate"           :   50.0,         # Hz
         "bc_field_std"          :   20.0,         # cm
+        "border_cell_connect_method" : "line",
 
         "ipc_ON"                :   0,            # bool
         "ipc_N"                 :   30,           # sqrt(total IPC number)

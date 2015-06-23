@@ -38,5 +38,5 @@ A collection of modules/packages that deal with data analysis:
     Wavelets
 '''
 
-__all__ = ['conversion', 'grid_cells', 'image', 'other', 'signal', 'spikes',
+__all__ = ['conversion', 'grid_cells', 'image','geometry', 'other', 'signal', 'spikes',
         'statistics', "visitors", "Wavelets"]
