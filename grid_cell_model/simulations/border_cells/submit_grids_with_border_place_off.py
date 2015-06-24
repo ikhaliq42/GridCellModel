@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-'''Submit job(s) to the cluster/workstation: grid field parameter sweeps.'''
+'''Submit job(s) to the cluster/workstation: grid field parameter sweeps.
+   This script will submit a simulation with the following settings:
+   -Border cells connected to excitatory grid cells
+   -Initialisation place cells active
+   -Simulation place cells switched off
+'''
 
 import numpy as np
 import pdb
@@ -18,12 +23,14 @@ o = parser.parse_args()
 p = dp.copy()
 #p['noise_sigma'] = noise_sigma # pA
 p['noise_sigma'] = 150 # pA
+# switch off place cells
+p['pcON'] = False
 
 # Submitting
 ENV         = o.env
 simRootDir  = o.where
 simLabel    = '{0}pA'.format(int(p['noise_sigma']))
-appName     = 'simulation_grids.py'
+appName     = 'simulation_grids_with_border.py'
 rtLimit     = o.rtLimit
 numCPU      = 1
 blocking    = True
