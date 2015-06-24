@@ -93,13 +93,11 @@ for trial_idx in range(len(d['trials']), o.ntrials):
     d.flush()
 
     # create the border cells
-    print("Creating border cells...\n")
     ei_net.create_border_cells([(-50.0,50.0),(50.0,50.0),(50.0,-50.0),(-50.0,-50.0)])
 
     # connect border cells according to chosen method
-    print("Connecting border cells using line method...\n")
     if o.border_cell_connect_method == "line":
-        ei_net.connect_border_cells_line_method(ei_net.E_pop)
+        ei_net.connect_border_cells_line_method()
 
     try:
         ei_net.simulate(o.time, printTime=o.printTime)

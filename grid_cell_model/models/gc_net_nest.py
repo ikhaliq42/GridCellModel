@@ -736,6 +736,8 @@ class NestGridCellNetwork(GridCellNetwork):
         b_starts. They are assumed to be end-to-end straight lines.
         '''
 
+        print("\nCreating border cells...")
+
         # create the border cells
         self.border_cells = nest.Create("border_cell_generator", len(b_starts))
 		
@@ -757,23 +759,23 @@ class NestGridCellNetwork(GridCellNetwork):
             nest.SetStatus([self.border_cells[i]], {"border_end_x": b_ends[i][0], 
                                                        "border_end_y": b_ends[i][1]})
 		
-    def connect_border_cells_line_method(self, g_cells):	
+    def connect_border_cells_line_method(self):	
         ''' 
         connect border cells to the grid cell population
         by projecting a "line" on the neural sheet corresponding to the
         actual border in the arena
         '''
-        b_cells = self.border_cells
+        g_cell_count = len(self.E_pop)
+        b_cell_count = len(self.border_cells)
 
         # get arena borders 
-        b_starts_x = nest.GetStatus(b_cells,"border_start_x")  
-        b_starts_y = nest.GetStatus(b_cells,"border_start_y")  
-        b_ends_x = nest.GetStatus(b_cells,"border_end_x")  
-        b_ends_y = nest.GetStatus(b_cells,"border_end_y")
-	b_starts = [Position2D(x,y) for x in b_starts_x for y in b_starts_y]
-	b_ends = [Position2D(x,y) for x in b_ends_x for y in b_ends_y]
-        borders = [(s, e) for s in b_starts for e in b_ends]
-
+        b_starts_x = nest.GetStatus(self.border_cells,"border_start_x")  
+        b_starts_y = nest.GetStatus(self.border_cells,"border_start_y")  
+        b_ends_x = nest.GetStatus(self.border_cells,"border_end_x")  
+        b_ends_y = nest.GetStatus(self.border_cells,"border_end_y")
+	b_starts = [Position2D(p[0],p[1]) for p in zip(b_starts_x, b_starts_y)]
+	b_ends = [Position2D(p[0],p[1]) for p in zip(b_ends_x, b_ends_y)]
+        borders = zip(b_starts, b_ends)
         # get arena dimensions (assumed rectangular)
         arenaDim = bounding_box_dimensions(b_starts)
 
@@ -784,17 +786,21 @@ class NestGridCellNetwork(GridCellNetwork):
         lines = [scaleLine(border, arenaDim, networkDim) for border in borders]
 
         # calculate weights for each border cell / arena border
+        print("Calculating border cells to E_pop connection weights...")
+        print("E_pop =", g_cell_count, " cells in total." ),
         W = []
         # how divergent the connections are, 3sigma rule --> division by 6.
         connStdDev = self.no.gridSep / 2. / 6. 
-        for l in lines:	#for each network line
-            w = self._generateGaussianBorderWeights(l, g_cells, connStdDev)
+        for i in range(b_cell_count):	#for each network line            
+            print("Border cell ", i, " of ", b_cell_count-1, "...")
+            w = self._generateGaussianBorderWeights(lines[i], self.E_pop, connStdDev)
             W.append(w)
 
         # connect border cells to grid cells
-        for i in range(len(b_cells)):
-            nest.DivergentConnect(  b_cells[i], 
-                                    g_cells, 
+        for i in range(b_cell_count):
+            print("Connecting border cell: ", i, " of ", b_cell_count-1, "...")
+            nest.DivergentConnect(  [self.border_cells[i]], 
+                                    self.E_pop, 
                                     W[i], 
                                     delay=self.no.delay, 
                                     model='PC_AMPA')

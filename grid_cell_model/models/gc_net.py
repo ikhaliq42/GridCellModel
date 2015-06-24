@@ -252,18 +252,23 @@ class GridCellNetwork(object):
         w = []
         prefDir = Position2D(0.0, 0.0)
               
-	for g in others:  
-            # Get grid cell position in neural sheet
-            others = self._get_e_network_layout_flat()
-            for i in range(len(others.x)):
-            	p = Position2D(others.x[i],others.y[i])
-                # Calculate a: the minimum distance to line l from point p
-                a = closest_point_to_line(p, l)
-                # need array types for compatibility with downstream functions...
-                other = Position2D(np.array(p.x),np.array(p.y))
-                #  Calculate the gaussian weight to a
-                w.extend(self._generateGaussianWeights(a, other, 
-                                                   sigma, prefDir, 0.0))
+        # Get grid cell position in neural sheet
+        others = self._get_e_network_layout_flat()
+        grid_cell_count = len(others.x)        
+        for i in range(grid_cell_count):
+            #if i > 99: print("\b\b", i),
+            #elif i > 9: print("\b", i),
+            #else: print(i),
+            p = Position2D(others.x[i],others.y[i])
+            # Calculate a: the minimum distance to line l from point p
+            a = closest_point_to_line(p, l)
+            # need np array types for compatibility with downstream functions...
+            other = Position2D()
+            other.x = np.ndarray((1,)); other.y = np.ndarray((1,))
+            other.x[0] = p.x; other.y[0] = p.y
+            #  Calculate the gaussian weight to a
+            w.extend(self._generateGaussianWeights(a, other, 
+                                               sigma, prefDir, 0.0))
 
         return w
 
