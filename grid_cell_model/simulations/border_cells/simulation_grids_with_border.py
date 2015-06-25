@@ -72,7 +72,7 @@ for trial_idx in range(len(d['trials']), o.ntrials):
                                   stateRecParams=(stateMonParams,
                                                   stateMonParams),
                                   rec_spikes_probabilistic=o.rec_spikes_probabilistic)
-    import pdb; pdb.set_trace()
+    
     if o.velON and not o.constantPosition:
         ei_net.setVelocityCurrentInput_e()
     if o.pcON:
