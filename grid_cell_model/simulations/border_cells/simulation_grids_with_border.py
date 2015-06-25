@@ -89,15 +89,15 @@ for trial_idx in range(len(d['trials']), o.ntrials):
                                "ON.")
         ei_net.setIPlaceCells()
 
-    d['net_params'] = ei_net.getNetParams()  # Common settings will stay
-    d.flush()
-
     # create the border cells
     ei_net.create_border_cells([(-50.0,50.0),(50.0,50.0),(50.0,-50.0),(-50.0,-50.0)])
 
     # connect border cells according to chosen method
     if o.border_cell_connect_method == "line":
         ei_net.connect_border_cells_line_method()
+
+    d['net_params'] = ei_net.getNetParams()  # Common settings will stay
+    d.flush()
 
     try:
         ei_net.simulate(o.time, printTime=o.printTime)
