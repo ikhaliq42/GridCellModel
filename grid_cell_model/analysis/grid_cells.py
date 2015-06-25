@@ -22,6 +22,7 @@
 
 import numpy    as np
 import numpy.ma as ma
+import sys
 
 from scipy.integrate             import trapz
 from scipy.signal                import correlate2d
@@ -62,6 +63,7 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     '''
     Preprocess neuron spike times into a spatial rate map, given arena parameters.
     Both spike times and rat tracking data must be aligned in time!
+    Assumes circular arena
     '''
     precision = arenaDiam/h
     xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
@@ -87,6 +89,39 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
 
     return  rateMap.T, xedges, yedges
 
+def SNSpatialRate2DRect(spikeTimes, rat_pos_x, rat_pos_y, dt, arena_dim_x, arena_dim_y, h):
+    '''
+    Preprocess neuron spike times into a spatial rate map, given arena parameters.
+    Both spike times and rat tracking data must be aligned in time!
+    Assumes rectangular arena, no masking required
+    '''
+    x_precision = arena_dim_x/h; y_precision = arena_dim_y/h
+    xedges = np.linspace(-arena_dim_x/2, arena_dim_x/2, y_precision+1)
+    yedges = np.linspace(-arena_dim_y/2, arena_dim_y/2, y_precision+1)
+
+    rateMap = np.zeros((len(xedges), len(yedges)))
+
+    count=-1; total = len(xedges)*len(xedges)
+    for x_i in xrange(len(xedges)):
+        for y_i in xrange(len(yedges)):
+            count+=1; progress = round(float(count)/total*100.0,1)
+            sys.stdout.write('\rProgress: %g %%' % (progress))
+            x = xedges[x_i]
+            y = yedges[y_i]
+            isNearTrack = np.count_nonzero(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2) <= h) > 0
+
+            if isNearTrack:
+                normConst = trapz(gaussianFilter(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2), sigma=h), dx=dt)
+                neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt)
+                spikes = np.sum(gaussianFilter(np.sqrt((neuronPos_x - x)**2 + (neuronPos_y - y)**2), sigma=h))
+                rateMap[x_i, y_i] = spikes/normConst
+
+    # Mask values which are outside the arena
+    #X, Y = np.meshgrid(xedges, yedges)
+    #rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > arenaDiam/2.0)
+
+    #return rateMap.T, xedges, yedges
+    return rateMap, xedges, yedges
 
 def occupancy_prob_dist(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     '''Calculate a probability distribution for animal positions in an arena.
@@ -107,6 +142,35 @@ def occupancy_prob_dist(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     precision = arenaDiam/h
     xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
     yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    dx = xedges[1] - xedges[0]
+    dy = yedges[1] - yedges[0]
+
+    xedges = np.hstack((xedges, [xedges[-1] + dx]))
+    yedges = np.hstack((yedges, [yedges[-1] + dy]))
+
+    H, _, _ = np.histogram2d(rat_pos_x, rat_pos_y, bins=[xedges, yedges], normed=False)
+    return (H / len(rat_pos_x)).T
+
+def occupancy_prob_dist_rect(spikeTimes, rat_pos_x, rat_pos_y, dt, arena_dim_x, arena_dim_y, h):
+    '''Calculate a probability distribution for animal positions in an arena.
+    Assumes rectangular arena
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    dist : numpy.ndarray
+        Probability distribution for the positional data, given the
+        discretisation of the arena. The first dimension is the y axis, the
+        second dimension is the x axis. The shape of the distribution is equal
+        to the number of items in the discretised edges of the arena.
+    '''
+    assert len(rat_pos_x) == len(rat_pos_y)
+
+    precision = arenaDiam/h
+    xedges = np.linspace(-arena_dim_x/2, arena_dim_x/2, precision+1)
+    yedges = np.linspace(-arena_dim_y/2, arena_dim_y/2, precision+1)
     dx = xedges[1] - xedges[0]
     dy = yedges[1] - yedges[0]
 
