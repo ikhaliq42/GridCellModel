@@ -27,23 +27,24 @@
 # Initialise environment module
 . /etc/profile.d/modules.sh
 
-module load python/2.6.6
+module load python/2.7.5
+
 
 BASE=../../
 export LOCAL_DIR=/exports/work/informatics/s1461613
-export PYTHONUSERBASE=$LOCAL_DIR/usr/local/
+#export PYTHONUSERBASE=$LOCAL_DIR/usr/local/
 
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/usr/local/lib/nest
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/opt/lib
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LOCAL_DIR/opt/lib/nest
 export LD_LIBRARY_PATH
 
 # virtualenvwrapper
-export WORKON_HOME=$LOCAL_DIR/Envs
-source $LOCAL_DIR/usr/local/bin/virtualenvwrapper.sh
+#export WORKON_HOME=$LOCAL_DIR/Envs
+source $LOCAL_DIR/gridcellmodel/gridcells/bin/activate
 
 trap 'echo catch signal USR2 at `date +"%D %T"`' usr2
 
 # Run the program
-workon noise
+# workon noise
 echo "Virtual environment: $VIRTUAL_ENV"
 python $* 
