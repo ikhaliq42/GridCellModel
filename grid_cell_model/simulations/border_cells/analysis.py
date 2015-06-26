@@ -15,7 +15,8 @@ trial_no = 0
 neuron_idx = 500
 arena_dim_x = 100.0; arena_dim_y = 100.0
 smoothingSigma=3.0
-sim_name = 'border_sim_with_place'
+sim_name = 'grid_sim_without_border'
+
 
 # open data file
 data = h5py.File(sim_name + '/150pA/job00000_output.h5', 'r+')
@@ -35,7 +36,7 @@ theta_start_t = float(np.array(data['net_params']['options']['theta_start_t']))
 data_path = '/trials/0/spikeMon_e/events/'
 
 # calculate rate map if not already present in data, otherwise load from data
-if ('analysis/rateMap_neuron' + str(neuron_idx)) not in \
+if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
                                data['trials'][str(trial_no)]['spikeMon_e']['events']: 
     # extract single neuron spike times
     spikes = np.zeros(sum(senders == neuron_idx))
@@ -62,20 +63,20 @@ if ('analysis/rateMap_neuron' + str(neuron_idx)) not in \
             pos_y[i*step + j] = rat_pos_y[i] + y_mov * j / step
     
     # create a spatial rate map if one does not already exist
-        print("\nGenerating spatial map...")
-        arenaDiam = math.sqrt(arena_dim_x ** 2 + arena_dim_y ** 2)
-        rateMap, xedges, yedges = SNSpatialRate2DRect(spikes, pos_x, pos_y, rat_dt, 
-                                            arena_dim_x, arena_dim_y, smoothingSigma)
-        rateMap *= 1e3 # should be Hz
-        X, Y = np.meshgrid(xedges, yedges)
-        data.create_dataset(data_path + 'rateMap_neuron' + str(neuron_idx), data=rateMap)
-        data.create_dataset(data_path + 'rateMap_X_neuron' + str(neuron_idx), data=X)
-        data.create_dataset(data_path + 'rateMap_Y_neuron' + str(neuron_idx), data=Y)
+    print("\nGenerating spatial map...")
+    arenaDiam = math.sqrt(arena_dim_x ** 2 + arena_dim_y ** 2)
+    rateMap, xedges, yedges = SNSpatialRate2DRect(spikes, pos_x, pos_y, rat_dt, 
+                                        arena_dim_x, arena_dim_y, smoothingSigma)
+    rateMap *= 1e3 # should be Hz
+    X, Y = np.meshgrid(xedges, yedges)
+    data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap', data=rateMap)
+    data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X', data=X)
+    data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y', data=Y)
 else:
     print("\nRate map already exists - loading.")
-    rateMap = np.array(data.get(data_path + 'analysis/rateMap_neuron' + str(neuron_idx)))
-    X = np.array(data.get(data_path + 'analysis/rateMap_X_neuron' + str(neuron_idx)))
-    Y = np.array(data.get(data_path + 'analysis/rateMap_Y_neuron' + str(neuron_idx)))
+    rateMap = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap'))
+    X = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X'))
+    Y = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y'))
 
 '''
 # create an occupancy probablity distribution for animal in arena if not already exists

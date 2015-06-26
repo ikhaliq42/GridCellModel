@@ -7,8 +7,8 @@ from matplotlib.pyplot import (figure, plot, pcolormesh, subplot2grid, savefig,
         colorbar, axis, xlabel, ylabel)
 
 from gridcells.analysis import information_specificity
-from grid_cell_model.analysis.grid_cells import (SNSpatialRate2DRect, SNAutoCorr,
-                                    cellGridnessScore, occupancy_prob_dist_rect,
+from grid_cell_model.analysis.grid_cells import (SNSpatialRate2D, SNAutoCorr,
+                                    cellGridnessScore, occupancy_prob_dist,
                                     spatial_sparsity)
 
 trial_no = 0
@@ -62,20 +62,20 @@ if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
             pos_y[i*step + j] = rat_pos_y[i] + y_mov * j / step
     
     # create a spatial rate map if one does not already exist
-        print("\nGenerating spatial map...")
-        arenaDiam = math.sqrt(arena_dim_x ** 2 + arena_dim_y ** 2)
-        rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, 
-                                            arena_dim_x, arena_dim_y, smoothingSigma)
-        rateMap *= 1e3 # should be Hz
-        X, Y = np.meshgrid(xedges, yedges)
-        data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap', data=rateMap)
-        data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X', data=X)
-        data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y', data=Y)
+    print("\nGenerating spatial map...")
+    arenaDiam = math.sqrt(arena_dim_x ** 2 + arena_dim_y ** 2)
+    rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, 
+                                        arena_dim_x, arena_dim_y, smoothingSigma)
+    rateMap *= 1e3 # should be Hz
+    X, Y = np.meshgrid(xedges, yedges)
+    data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap', data=rateMap)
+    data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X', data=X)
+    data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y', data=Y)
 else:
     print("\nRate map already exists - loading.")
     rateMap = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap'))
-    X = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X')))
-    Y = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y')))
+    X = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X'))
+    Y = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y'))
 
 '''
 # create an occupancy probablity distribution for animal in arena if not already exists
