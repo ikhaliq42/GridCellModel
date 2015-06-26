@@ -71,8 +71,11 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
 
     rateMap = np.zeros((len(xedges), len(yedges)))
 
+    count=-1; total = len(xedges)*len(xedges)
     for x_i in xrange(len(xedges)):
         for y_i in xrange(len(yedges)):
+            count+=1; progress = round(float(count)/total*100.0,1)
+            sys.stdout.write('\rProgress: %g %%' % (progress))
             x = xedges[x_i]
             y = yedges[y_i]
             isNearTrack = np.count_nonzero(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2) <= h) > 0
