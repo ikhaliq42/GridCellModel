@@ -17,6 +17,8 @@ from param_sweep import getBumpCurrentSlope
 from default_params import defaultParameters as dp
 
 parser = GenericSubmissionParser()
+parser.add_argument("--pcON", type=int, choices=[0, 1], default=True, help="Place cell input ON?")
+parser.add_argument("--bcON", type=int, choices=[0, 1], default=True, help="Border cell input ON?")
 o = parser.parse_args()
 
 #for noise_sigma in parser.noise_sigmas:
