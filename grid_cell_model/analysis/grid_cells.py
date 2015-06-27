@@ -99,7 +99,7 @@ def SNSpatialRate2DRect(spikeTimes, rat_pos_x, rat_pos_y, dt, arena_dim_x, arena
     Assumes rectangular arena, no masking required
     '''
     x_precision = arena_dim_x/h; y_precision = arena_dim_y/h
-    xedges = np.linspace(-arena_dim_x/2, arena_dim_x/2, y_precision+1)
+    xedges = np.linspace(-arena_dim_x/2, arena_dim_x/2, x_precision+1)
     yedges = np.linspace(-arena_dim_y/2, arena_dim_y/2, y_precision+1)
 
     rateMap = np.zeros((len(xedges), len(yedges)))
@@ -154,35 +154,6 @@ def occupancy_prob_dist(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     H, _, _ = np.histogram2d(rat_pos_x, rat_pos_y, bins=[xedges, yedges], normed=False)
     return (H / len(rat_pos_x)).T
 
-def occupancy_prob_dist_rect(spikeTimes, rat_pos_x, rat_pos_y, dt, arena_dim_x, arena_dim_y, h):
-    '''Calculate a probability distribution for animal positions in an arena.
-    Assumes rectangular arena
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    dist : numpy.ndarray
-        Probability distribution for the positional data, given the
-        discretisation of the arena. The first dimension is the y axis, the
-        second dimension is the x axis. The shape of the distribution is equal
-        to the number of items in the discretised edges of the arena.
-    '''
-    assert len(rat_pos_x) == len(rat_pos_y)
-
-    precision = arenaDiam/h
-    xedges = np.linspace(-arena_dim_x/2, arena_dim_x/2, precision+1)
-    yedges = np.linspace(-arena_dim_y/2, arena_dim_y/2, precision+1)
-    dx = xedges[1] - xedges[0]
-    dy = yedges[1] - yedges[0]
-
-    xedges = np.hstack((xedges, [xedges[-1] + dx]))
-    yedges = np.hstack((yedges, [yedges[-1] + dy]))
-
-    H, _, _ = np.histogram2d(rat_pos_x, rat_pos_y, bins=[xedges, yedges], normed=False)
-    return (H / len(rat_pos_x)).T
-
 
 def spatial_sparsity(rate_map, px):
     '''Compute spatial sparsity according to Buetfering et al., 2014.
@@ -215,6 +186,17 @@ def SNAutoCorr(rateMap, arenaDiam, h):
     X, Y = np.meshgrid(xedges, yedges)
 
     corr = ma.masked_array(correlate2d(rateMap, rateMap), mask = np.sqrt(X**2 + Y**2) > arenaDiam)
+
+    return corr, xedges, yedges
+
+def SNAutoCorrRect(rateMap, arena_dim_x, arena_dim_y, h):
+    x_precision = arena_dim_x/h
+    y_precision = arena_dim_y/h
+    xedges = np.linspace(-arena_dim_x/2, arena_dim_x/2, x_precision*2 + 1)
+    yedges = np.linspace(-arena_dim_y/2, arena_dim_y/2, y_precision*2 + 1)
+    X, Y = np.meshgrid(xedges, yedges)
+
+    corr = np.array(correlate2d(rateMap, rateMap))
 
     return corr, xedges, yedges
 
@@ -306,5 +288,40 @@ def cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
 
     return G, np.array(crossCorr), angles
 
+def cellGridnessScoreRect(rateMap, arena_dim_x, arena_dim_y, h, corr_cutRmin):
+    '''
+    Compute a cell gridness score by taking the auto correlation of the
+    firing rate map, rotating it, and subtracting maxima of the
+    correlation coefficients of the former and latter, at 30, 90 and 150 (max),
+    and 60 and 120 deg. (minima). This gives the gridness score.
 
+    The center of the auto correlation map (given by corr_cutRmin) is removed
+    from the map
+    '''
+    rateMap_mean = rateMap - np.mean(np.reshape(rateMap, (1, rateMap.size)))
+    autoCorr, autoC_xedges, autoC_yedges = \
+                         SNAutoCorrRect(rateMap_mean, arena_dim_x, arena_dim_y, h)
+
+    # Remove the center point and
+    X, Y = np.meshgrid(autoC_xedges, autoC_yedges)
+    autoCorr[np.sqrt(X**2 + Y**2) < corr_cutRmin] = 0
+
+    da = 3
+    angles = range(0, 180+da, da)
+    crossCorr = []
+    # Rotate and compute correlation coefficient
+    for angle in angles:
+        autoCorrRot = rotate(autoCorr, angle, reshape=False)
+        C = np.corrcoef(np.reshape(autoCorr, (1, autoCorr.size)),
+            np.reshape(autoCorrRot, (1, autoCorrRot.size)))
+        crossCorr.append(C[0, 1])
+
+    max_angles_i = np.array([30, 90, 150]) / da
+    min_angles_i = np.array([60, 120]) / da
+
+    maxima = np.max(np.array(crossCorr)[max_angles_i])
+    minima = np.min(np.array(crossCorr)[min_angles_i])
+    G = minima - maxima
+
+    return G, np.array(crossCorr), angles
 

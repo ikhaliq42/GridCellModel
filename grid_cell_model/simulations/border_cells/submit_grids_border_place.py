@@ -23,8 +23,6 @@ o = parser.parse_args()
 p = dp.copy()
 #p['noise_sigma'] = noise_sigma # pA
 p['noise_sigma'] = 150 # pA
-# switch off place cells
-p['pcON'] = False
 
 # Submitting
 ENV         = o.env
@@ -43,7 +41,6 @@ p['time']             = 600e3 if o.time is None else o.time  # ms
 p['nthreads']         = 1
 p['ntrials']          = o.ntrials
 p['velON']            = 1
-p['pcON']             = 1
 p['constantPosition'] = 0
 p['verbosity']        = o.verbosity
 
