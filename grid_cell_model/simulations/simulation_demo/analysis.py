@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import math
 import sys
+import argparse
 
 from matplotlib.pyplot import (figure, plot, pcolormesh, subplot2grid, savefig,
         colorbar, axis, xlabel, ylabel)
@@ -11,14 +12,23 @@ from grid_cell_model.analysis.grid_cells import (SNSpatialRate2D, SNAutoCorr,
                                     cellGridnessScore, occupancy_prob_dist,
                                     spatial_sparsity)
 
-trial_no = 0
-neuron_idx = 500
-arena_dim_x = 100.0; arena_dim_y = 100.0
+parser = argparse.ArgumentParser()
+parser.add_argument("sim_name", type=str, help="directory path of simulation data")
+parser.add_argument("--neuron_idx", type=int, help="Index of neuron to analyse, default = 0", default=0)
+parser.add_argument("--trial_no", type=int, help="Trial number, default = 0", default=0)
+args = parser.parse_args()
+
+noise = 'demo_output_data'
+trial_no = args.trial_no
+neuron_idx = args.neuron_idx
+arena_diam = 180.0
 smoothingSigma=3.0
-sim_name = 'demo_sim_full'
+sim_name = args.sim_name
+args = parser.parse_args()
 
 # open data file
-data = h5py.File(sim_name + '/150pA/job00000_output.h5', 'r+')
+assert not (args.sim_name == "") 
+data = h5py.File(args.sim_name + '/' + noise + '/job00000_output.h5', 'r+')
 
 # load simulation data
 print("Loading simulation data...")
@@ -62,10 +72,9 @@ if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
             pos_y[i*step + j] = rat_pos_y[i] + y_mov * j / step
     
     # create a spatial rate map if one does not already exist
-    print("\nGenerating spatial map...")
-    arenaDiam = math.sqrt(arena_dim_x ** 2 + arena_dim_y ** 2)
+    print("\nGenerating spatial map...")    
     rateMap, xedges, yedges = SNSpatialRate2D(spikes, pos_x, pos_y, rat_dt, 
-                                        arena_dim_x, arena_dim_y, smoothingSigma)
+                                        arena_diam, smoothingSigma)
     rateMap *= 1e3 # should be Hz
     X, Y = np.meshgrid(xedges, yedges)
     data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap', data=rateMap)
@@ -81,7 +90,7 @@ else:
 # create an occupancy probablity distribution for animal in arena if not already exists
 if ('/analysis/occupancy_prob_' + str(neuron_idx)) not in \
                                data['trials'][str(trial_no)]['spikeMon_e']['events']:
-    px = occupancy_prob_dist(spikes, pos_x, pos_y, 
+    px = occupancy_prob_dist_rect(spikes, pos_x, pos_y, 
                                              arena_dim_x, arena_dim_y, smoothingSigma)
 else:
     print("\Occupancy probability already exists - loading.")
@@ -97,14 +106,14 @@ if ('occupancy_prob_' + str(neuron_idx)) not in
 '''
 
 # Draw plot
-print("Creating plot...") 
+print("\nCreating plot...") 
 figure()
 pcolormesh(X, Y, rateMap)
 colorbar()
 axis('equal')
 axis('off')
 print("Saving plot")
-savefig('{0}_rateMap_{1}.png'.format(sim_name, neuron_idx))
+savefig('{0}rateMap_neuron{1}.png'.format(sim_name+'/'+noise+'/', neuron_idx))
 
 print("")
 # close data file
