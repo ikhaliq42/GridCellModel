@@ -17,6 +17,8 @@ from param_sweep import getBumpCurrentSlope
 from default_params import defaultParameters as dp
 
 parser = GenericSubmissionParser()
+parser.add_argument("--pcON", type=int, choices=[0, 1], default=True, help="Place cell input ON?")
+parser.add_argument("--bcON", type=int, choices=[0, 1], default=True, help="Border cell input ON?")
 o = parser.parse_args()
 
 #for noise_sigma in parser.noise_sigmas:
@@ -28,7 +30,7 @@ p['noise_sigma'] = 150 # pA
 ENV         = o.env
 simRootDir  = o.where
 simLabel    = '{0}pA'.format(int(p['noise_sigma']))
-appName     = 'simulation_grids_with_border.py'
+appName     = 'simulation_grids_border_place.py'
 rtLimit     = o.rtLimit
 numCPU      = 1
 blocking    = True

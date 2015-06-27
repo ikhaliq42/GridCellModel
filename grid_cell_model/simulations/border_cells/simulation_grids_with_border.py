@@ -22,8 +22,6 @@ logger = logging.getLogger(__name__)
 
 parser = getOptParser()
 parser.add_argument("--velON",            type=int,   choices=[0, 1], required=True, help="Velocity input ON?")
-parser.add_argument("--pcON",             type=int,   choices=[0, 1], default=True, help="Place cell input ON?")
-parser.add_argument("--bcON",             type=int,   choices=[0, 1], default=True, help="Border cell input ON?")
 parser.add_argument("--constantPosition", type=int,   choices=[0, 1], required=True, help="Should the animat move?")
 parser.add_argument("--staticPos_x",      type=float, default=0.0,    help="Static position X coordinate")
 parser.add_argument("--staticPos_y",      type=float, default=0.0,    help="Static position Y coordinate")
