@@ -36,7 +36,7 @@ defaultParameters = {
 
         "ratVelFName"           : '../../../data/Sargolini_2006.mat',
 
-        "gridSep"               :   60,           # cm
+        "gridSep"               :   30,           # cm
 
         "EI_flat"               :   0,            # bool
         "IE_flat"               :   0,            # bool
