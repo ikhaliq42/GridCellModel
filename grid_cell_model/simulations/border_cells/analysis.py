@@ -12,12 +12,14 @@ from grid_cell_model.analysis.grid_cells import (SNSpatialRate2DRect, cellGridne
 
 parser = argparse.ArgumentParser()
 parser.add_argument("sim_name", type=str, help="directory path of simulation data")
+parser.add_argument("--spike_mon_type", type=str, default='spikeMon_e')
 parser.add_argument("--neuron_idx", type=int, help="Index of neuron to analyse, default = 0", default=0)
 parser.add_argument("--trial_no", type=int, help="Trial number, default = 0", default=0)
 args = parser.parse_args()
 
 noise = '150pA'
 trial_no = args.trial_no
+spike_mon_type = args.spike_mon_type
 neuron_idx = args.neuron_idx
 arena_dim_x = 100.0; arena_dim_y = 100.0
 smoothingSigma=3.0
@@ -31,8 +33,8 @@ data = h5py.File(args.sim_name + '/' + noise + '/job00000_output.h5', 'r+')
 
 # load simulation data
 print("Loading simulation data...")
-senders = np.array(data['trials'][str(trial_no)]['spikeMon_e']['events']['senders'])
-times = np.array(data['trials'][str(trial_no)]['spikeMon_e']['events']['times'])
+senders = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['senders'])
+times = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['times'])
 rat_pos_x = np.array(data['net_params']['net_attr']['rat_pos_x'])
 rat_pos_y = np.array(data['net_params']['net_attr']['rat_pos_y'])
 rat_dt = float(np.array(data['net_params']['net_attr']['rat_dt']))
@@ -42,11 +44,11 @@ theta_start_t = float(np.array(data['net_params']['options']['theta_start_t']))
 gridSep = float(np.array(data['net_params']['options']['gridSep']))
 
 # data path
-data_path = '/trials/0/spikeMon_e/events/'
+data_path = '/trials/0/'+spike_mon_type+'/events/'
 
 # calculate rate map if not already present in data, otherwise load from data
 if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
-                               data['trials'][str(trial_no)]['spikeMon_e']['events']: 
+                               data['trials'][str(trial_no)][spike_mon_type]['events']: 
     # extract single neuron spike times
     spikes = np.zeros(sum(senders == neuron_idx))
     j = 0
@@ -95,7 +97,7 @@ colorbar()
 axis('equal')
 axis('off')
 print("Saving plot")
-savefig('{0}rateMap_neuron{1}.png'.format(sim_name+ '/'+noise+'/', neuron_idx))
+savefig('{0}rateMap_{1}_{2}.png'.format(sim_name+'/'+noise+'/', spike_mon_type, neuron_idx))
 
 
 

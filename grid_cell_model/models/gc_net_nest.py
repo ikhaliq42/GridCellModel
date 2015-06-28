@@ -775,7 +775,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         # add a spike detector
         gids = nest.GetStatus(border_cells, "global_id")
-        spike_mon_b =  self.getGenericSpikeDetector(gids, "spike_mon_b")
+        spikeMon_b =  self.getGenericSpikeDetector(gids, "spikeMon_b")
 
         # load rat velocities
         npos = int(self.no.time / posIn.pos_dt)
@@ -784,7 +784,7 @@ class NestGridCellNetwork(GridCellNetwork):
                                'rat_pos_y' : list(posIn.pos_y[0:npos]),
                                'rat_pos_dt': posIn.pos_dt})
 
-        return border_cells, spike_mon_b
+        return border_cells, spikeMon_b
 		
     def connect_border_cells_line_method(self):	
         ''' 

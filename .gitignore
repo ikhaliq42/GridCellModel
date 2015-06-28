@@ -1,5 +1,6 @@
 /central_data_store
 *.pyc
+*.png
 *.o
 *.so
 *.swp
