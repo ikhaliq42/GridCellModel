@@ -728,23 +728,37 @@ class NestGridCellNetwork(GridCellNetwork):
                 else:
                     print("Target not in I_pop!")
         return W
-		
+
     def create_border_cells(self, b_starts):
+        self.border_cells, _ = self.create_generic_border_cells(b_starts, 
+                                   self.no.bc_max_rate, self.no.bc_field_std)
+		
+    def create_generic_border_cells(self, b_starts, maxRate, fieldStdDev,
+                                           start=None, end=None, posIn=None):
 	'''
         Function to create border cells. 
         Border start coordinates are specified by the list of tuples in 
         b_starts. They are assumed to be end-to-end straight lines.
-        '''
+        '''             
 
         print("\nCreating border cells...")
 
+        # Start and end times, and rat trajectory 
+        if start is None:
+            start = self.no.theta_start_t
+        if end is None:
+            end = self.no.time
+        if posIn is None:
+            self._loadRatVelocities()
+            posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
+
         # create the border cells
-        self.border_cells = nest.Create("border_cell_generator", len(b_starts))
+        border_cells = nest.Create("border_cell_generator", len(b_starts),
+                             params={'rate'      : maxRate,
+                                     'field_size': fieldStdDev,
+                                     'start'     : start,
+                                     'stop'      : end})
 		
-        # set border cell parameters
-        nest.SetStatus(self.border_cells, {"rate": self.no.bc_max_rate})
-        nest.SetStatus(self.border_cells, {"field_size": self.no.bc_field_std})
-	
         # derive border end points
         n = len(b_starts)
         b_ends = range(n)
@@ -754,10 +768,23 @@ class NestGridCellNetwork(GridCellNetwork):
 	
         # set the borders
         for i in range(len(b_starts)):
-            nest.SetStatus([self.border_cells[i]], {"border_start_x": b_starts[i][0],
+            nest.SetStatus([border_cells[i]], {"border_start_x": b_starts[i][0],
                                                 "border_start_y": b_starts[i][1]})
-            nest.SetStatus([self.border_cells[i]], {"border_end_x": b_ends[i][0], 
+            nest.SetStatus([border_cells[i]], {"border_end_x": b_ends[i][0], 
                                                        "border_end_y": b_ends[i][1]})
+
+        # add a spike detector
+        gids = nest.GetStatus(border_cells, "global_id")
+        spike_mon_b =  self.getGenericSpikeDetector(gids, "spike_mon_b")
+
+        # load rat velocities
+        npos = int(self.no.time / posIn.pos_dt)
+        nest.SetStatus(border_cells, params={
+                               'rat_pos_x' : list(posIn.pos_x[0:npos]),
+                               'rat_pos_y' : list(posIn.pos_y[0:npos]),
+                               'rat_pos_dt': posIn.pos_dt})
+
+        return border_cells, spike_mon_b
 		
     def connect_border_cells_line_method(self):	
         ''' 
@@ -799,9 +826,10 @@ class NestGridCellNetwork(GridCellNetwork):
         # connect border cells to grid cells
         for i in range(b_cell_count):
             print("Connecting border cell: ", i, " of ", b_cell_count-1, "...")
+            
             nest.DivergentConnect(  [self.border_cells[i]], 
                                     self.E_pop, 
-                                    W[i], 
+                                    list(W[i] * self.no.bc_conn_weight), 
                                     delay=self.no.delay, 
                                     model='PC_AMPA')
 

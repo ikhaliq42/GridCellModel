@@ -102,7 +102,7 @@ if __name__=="__main__":
     pcolormesh(pc.getSheetInput(.0, .0)); show()
     
     
-    vel_fname = '../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
+    vel_fname = '../../data/Sargolini_2006.mat'
     ratData = loadmat(vel_fname)
     pos_x = ratData['pos_x'].flatten()
     pos_y = ratData['pos_y'].flatten()

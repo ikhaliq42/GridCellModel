@@ -142,6 +142,7 @@ class ParameterSelector(object):
         '''Border cell parameters.'''        
         self.parser.add_argument("--bc_max_rate",                type=float,  help="Place cell maximal firing rate (Hz)")
         self.parser.add_argument("--bc_field_std",               type=float,  help="Std. deviation of the Gaussian specifying the distance response (cm)")
+        self.parser.add_argument("--bc_conn_weight",             type=float,  help="Connection weight from each border to grid cells (nS)")
         self.parser.add_argument("--border_cell_connect_method", type=str, help="Method by which border cells are connected to grid cells", choices=["line"] ) 
 
     def synapse_properties(self):

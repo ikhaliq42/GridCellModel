@@ -50,7 +50,7 @@ defaultParameters = {
         "prefDirC_e"            :   4.0,
         "prefDirC_ee"           :   0.0,
         "prefDirC_i"            :   0.0,
-        "arenaSize"             :   180.0,        # cm
+        "arenaSize"             :   100.0,        # cm
 
         "NMDA_amount"           :   2.0,          # %
         "C_Mg"                  :      .0,        # mM; def is no Vm dependence
@@ -124,6 +124,7 @@ defaultParameters = {
 
         "bc_max_rate"           :   50.0,         # Hz
         "bc_field_std"          :   20.0,         # cm
+        "bc_conn_weight"        :   0.5,          # bS
         "border_cell_connect_method" : "line",
 
         "ipc_ON"                :   0,            # bool
