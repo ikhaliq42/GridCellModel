@@ -17,10 +17,10 @@ from param_sweep import getBumpCurrentSlope
 from default_params import defaultParameters as dp
 
 parser = GenericSubmissionParser()
-parser.add_argument("--pcON", type=int, choices=[0, 1], default=True, help="Place cell input ON?")
-parser.add_argument("--bcON", type=int, choices=[0, 1], default=True, help="Border cell input ON?")
+parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
+parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 o = parser.parse_args()
-
+#import pdb; pdb.set_trace()
 #for noise_sigma in parser.noise_sigmas:
 p = dp.copy()
 #p['noise_sigma'] = noise_sigma # pA
@@ -37,12 +37,16 @@ blocking    = True
 timePrefix  = False
 numRepeat   = 1
 dry_run     = o.dry_run
+pcON        = o.pcON
+bcON        = o.bcON
 
 p['master_seed']      = 123456
 p['time']             = 600e3 if o.time is None else o.time  # ms
 p['nthreads']         = 1
 p['ntrials']          = o.ntrials
 p['velON']            = 1
+p['pcON']             = o.pcON
+p['bcON']             = o.bcON
 p['constantPosition'] = 0
 p['verbosity']        = o.verbosity
 
