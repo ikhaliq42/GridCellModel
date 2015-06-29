@@ -632,6 +632,10 @@ class NestGridCellNetwork(GridCellNetwork):
                     delay=[self.no.delay] * len(w),
                     model='PC_AMPA')
 
+            # add a spike detector
+            gids = nest.GetStatus(PC, "global_id")
+            spikeMon_p =  self.getGenericSpikeDetector(gids, "spikeMon_p")
+
             return PC, PCHelper, NTotal
 
         else:
