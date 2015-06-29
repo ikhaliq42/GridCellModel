@@ -1,0 +1,25 @@
+load('Sargolini_2006_t2c1.mat')
+
+mu1 = [-25,-25];
+sigma1 = [5, 0; 0 5];
+mu2 = [25,25];
+sigma2 = [10, 0; 0 10];
+
+f1 = mvnpdf([pos_x pos_y],mu1,sigma1);
+f2 = mvnpdf([pos_x pos_y],mu2,sigma2);
+
+disc_pos_x = round(pos_x);
+disc_pos_y = round(pos_y);
+disc_pos_x = disc_pos_x + abs(min(disc_pos_x)) + 1;
+disc_pos_y = disc_pos_y + abs(min(disc_pos_y)) + 1;
+
+arena = zeros(max(disc_pos_x),max(disc_pos_y));
+
+for i = 1:size(f1,1)
+    r = disc_pos_x(i);
+    c = disc_pos_y(i);
+    z = arena(r,c);
+    arena(r,c) = z + f1(i) + f2(i);
+end
+
+contour(arena)
