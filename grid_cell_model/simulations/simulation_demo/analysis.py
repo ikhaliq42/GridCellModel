@@ -13,9 +13,9 @@ from grid_cell_model.analysis.grid_cells import (SNSpatialRate2D, cellGridnessSc
 parser = argparse.ArgumentParser()
 parser.add_argument("sim_name", type=str, help="directory path of simulation data")
 parser.add_argument("--spike_mon_type", type=str, default='spikeMon_e')
-parser.add_argument("--neuron_idx", type=bool, help="Index of neuron to analyse, default = 0", default=False)
+parser.add_argument("--neuron_idx", type=int, help="Index of neuron to analyse, default = 0", default=0)
 parser.add_argument("--trial_no", type=int, help="Trial number, default = 0", default=0)
-parser.add_argument("--recalc", type=int, help="Force recals, default = 0", default=0)
+parser.add_argument("--recalc", type=bool, help="Force recals, default = 0", default=0)
 args = parser.parse_args()
 
 noise = 'demo_output_data'
@@ -37,13 +37,13 @@ data = h5py.File(args.sim_name + '/' + noise + '/job00000_output.h5', 'r+')
 print("Loading simulation data...")
 senders = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['senders'])
 times = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['times'])
-rat_pos_x = np.array(data['net_params']['net_attr']['rat_pos_x'])
-rat_pos_y = np.array(data['net_params']['net_attr']['rat_pos_y'])
-rat_dt = float(np.array(data['net_params']['net_attr']['rat_dt']))
-sim_time = float(np.array(data['net_params']['options']['time']))
-sim_dt = float(np.array(data['net_params']['options']['sim_dt']))
-theta_start_t = float(np.array(data['net_params']['options']['theta_start_t']))
-gridSep = float(np.array(data['net_params']['options']['gridSep']))
+rat_pos_x = np.array(data['trials'][str(trial_no)]['net_attr']['rat_pos_x'])
+rat_pos_y = np.array(data['trials'][str(trial_no)]['net_attr']['rat_pos_y'])
+rat_dt = float(np.array(data['trials'][str(trial_no)]['net_attr']['rat_dt']))
+sim_time = float(np.array(data['trials'][str(trial_no)]['options']['time']))
+sim_dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
+theta_start_t = float(np.array(data['trials'][str(trial_no)]['options']['theta_start_t']))
+gridSep = float(np.array(data['trials'][str(trial_no)]['options']['gridSep']))
 
 # data path
 data_path = '/trials/0/'+spike_mon_type+'/events/'
@@ -62,12 +62,17 @@ if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
         if (senders[i] == neuron_idx): spikes[j] = times[i]; j += 1
      
     # create a spatial rate map if one does not already exist
-    print("\nGenerating spatial map...")    
-    import pdb; pdb.set_trace()
+    print("\nGenerating spatial map...")   
+    
     rateMap, xedges, yedges = SNSpatialRate2D(spikes, rat_pos_x, rat_pos_y, rat_dt, 
-                                                           arenaDiam, smoothingSigma)
-    rateMap *= 1e3 # should be Hz
+                                               arenaDiam, smoothingSigma)
     X, Y = np.meshgrid(xedges, yedges)
+    rateMap *= 1e3 # should be Hz
+    if recalc: 
+        import pdb; pdb.set_trace()
+        del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap']
+        del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/X']
+        del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y']
     data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap', data=rateMap)
     data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X', data=X)
     data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y', data=Y)
@@ -79,9 +84,9 @@ else:
 
 # close data file
 data.close()
-'''
+
 # Calculate gridness score
-G_i, crossCorr_i, angles_i = cellGridnessScore(rateMap, arenaDiam, 
+G_i, crossCorr_i, angles_i = cellGridnessScore(rateMap, arenaDiam,
                                                    smoothingSigma, gridSep/2)
 # Gridness score valid only when T >= minGridnessT
 lastSpikeT = times[-1] if len(times) != 0 else np.nan
@@ -91,7 +96,7 @@ if lastSpikeT >= minGridnessT:
     print "gridness angles = " , angles_i
 else:
     print "Simulation too short, Gridness score NaN"
-'''
+
 
 # Draw ratemap plots
 print("\nCreating plot...") 
