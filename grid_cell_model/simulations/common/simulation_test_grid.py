@@ -33,6 +33,12 @@ for trial_idx in range(o.ntrials):
     ei_net = BasicGridCellNetwork(o, simulationOpts=None)
     d['net_params'] = ei_net.getNetParams()  # Common settings will stay
 
+    # turn velocity inputs on
+    ei_net.setVelocityCurrentInput_e()
+
+    # activate place cells (including start place cells))
+    ei_net.setPlaceCells()
+
     try:
         ei_net.simulate(o.time, printTime=o.printTime)
     except NESTError as e:
