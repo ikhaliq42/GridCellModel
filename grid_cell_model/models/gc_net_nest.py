@@ -733,7 +733,14 @@ class NestGridCellNetwork(GridCellNetwork):
                     print("Target not in I_pop!")
         return W
 
-    def create_border_cells(self, b_starts):
+    def create_border_cells(self, b_starts=None):
+
+        if b_starts==None:
+            self._loadRatVelocities()
+            max_x = max(self.rat_pos_x); min_x = min(self.rat_pos_x)
+            max_y = max(self.rat_pos_y); min_y = min(self.rat_pos_y)
+            b_starts = [(min_x,max_y),(max_x,max_y),(max_x,min_y),(min_x,min_y)]           
+        
         self.border_cells, _ = self.create_generic_border_cells(b_starts, 
                                    self.no.bc_max_rate, self.no.bc_field_std)
 		

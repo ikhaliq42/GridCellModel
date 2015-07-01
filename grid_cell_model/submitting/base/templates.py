@@ -49,6 +49,8 @@ class DemoSimulation(SimulationTemplate):
         p['nthreads']    = o.nthreads
         p['ntrials']     = o.ntrials
         p['verbosity']   = o.verbosity
+        p['pcON']        = o.pcON
+        p['bcON']        = o.bcON
 
         p.update(self._up)
 
