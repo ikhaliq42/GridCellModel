@@ -25,7 +25,7 @@ def check_ivel_vec(trial):
         d.flush()
 
 (o, args) = parser.parse_args()
-
+o.master_seed = int(o.master_seed)
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
         o.fileNamePrefix, o.job_num)
@@ -34,8 +34,10 @@ if ("trials" not in d.keys()):
     d['trials'] = []
 
 # Initialise seeds and check their consistency with previously saved data
+
 seed_gen = TrialSeedGenerator(o.master_seed)
-if len(d['trials']) == 0:
+
+if len(d['trials']) == 0:    
     d['master_seed'] = o.master_seed
 else:
     try:
@@ -66,6 +68,7 @@ for trial_idx in range(o.ntrials):
     try:
         IvelVecAppend = np.arange(oldNIvel*o.dIvel, o.IvelMax + o.dIvel, o.dIvel)
         for Ivel in IvelVecAppend:
+            
             seed_gen.set_generators(trial_idx)  # Each trial is reproducible
             const_v = [0.0, -Ivel]
             ei_net = ConstantVelocityNetwork(o, simulationOpts=None, vel=const_v)

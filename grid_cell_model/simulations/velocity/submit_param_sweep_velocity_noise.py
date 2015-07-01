@@ -46,20 +46,20 @@ dry_run     = False
 p['time']     = 10e3  # ms
 p['nthreads'] = 1
 p['ntrials']  = 10
-
+p['master_seed'] = 123456
 p['IvelMax']  = 100
 p['dIvel']    = 10
 
 p['verbosity'] = 'DEBUG'
 
 # Range of noise and E/I synaptic conductances
-noiseParams = SweepParams(0, 300, 31)
+noiseParams = SweepParams(0, 300, 3)
 if (simLabel == 'EI-1_3'):
-    gEParams = SweepParams(816, 1224, 3)
-    gIParams = SweepParams(2856, 3264, 3)
+    gEParams = SweepParams(1020, 1020, 1)
+    gIParams = SweepParams(2040, 2040, 1)
 elif (simLabel == 'EI-3_1'):
-    gEParams = SweepParams(2856, 3264, 3)
-    gIParams = SweepParams(816, 1224, 3)
+    gEParams = SweepParams(1020, 1020, 1)
+    gIParams = SweepParams(2040, 2040, 1)
 else:
     raise ValueError('Unknown simLabel!')
 

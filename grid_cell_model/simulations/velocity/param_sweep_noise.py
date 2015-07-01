@@ -20,10 +20,10 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import numpy as np
-from submitting.factory   import SubmitterFactory
-from submitting.arguments import ArgumentCreator
-from otherpkg.log         import log_info
-from data_storage         import DataStorage
+from grid_cell_model.submitting.factory   import SubmitterFactory
+from grid_cell_model.submitting.arguments import ArgumentCreator
+from grid_cell_model.otherpkg.log         import log_info
+from grid_cell_model.data_storage         import DataStorage
 
 
 def submitNoiseSweep(p, gEp, gIp, noisep,
@@ -61,8 +61,9 @@ def submitNoiseSweep(p, gEp, gIp, noisep,
             blocking=blocking, timePrefix=timePrefix, numCPU=numCPU)
     ac.setOption('output_dir', submitter.outputDir())
     startJobNum = 0
+    
     submitter.submitAll(startJobNum, numRepeat, dry_run=dry_run)
-    submitter.saveIterParams(iterparams, dry_run=dry_run)
+    #submitter.saveIterParams(iterparams, dry_run=dry_run)
 
 
 class SweepParams(object):
