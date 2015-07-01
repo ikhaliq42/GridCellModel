@@ -71,7 +71,6 @@ if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
     X, Y = np.meshgrid(xedges, yedges)
     rateMap *= 1e3 # should be Hz
     if recalc: 
-        import pdb; pdb.set_trace()
         del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap']
         del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/X']
         del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y']
