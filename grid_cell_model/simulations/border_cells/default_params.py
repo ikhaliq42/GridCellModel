@@ -50,7 +50,7 @@ defaultParameters = {
         "prefDirC_e"            :   4.0,
         "prefDirC_ee"           :   0.0,
         "prefDirC_i"            :   0.0,
-        "arenaSize"             :   283.0,        # cm
+        "arenaSize"             :   180.0,        # cm
 
         "NMDA_amount"           :   2.0,          # %
         "C_Mg"                  :      .0,        # mM; def is no Vm dependence
@@ -118,7 +118,7 @@ defaultParameters = {
         "pc_max_rate"           :   50.0,         # Hz
         "pc_conn_weight"        :   0.5,          # nS
         "pc_field_std"          :   20.0,         # cm
-        "bumpCurrentSlope"      :   0.53,         # neurons/s/pA, !! this will depend on prefDirC !!
+        "bumpCurrentSlope"      :   0.48616,         # neurons/s/pA, !! this will depend on prefDirC !!
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
 
