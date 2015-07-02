@@ -94,8 +94,8 @@ G_i, crossCorr_i, angles_i = cellGridnessScoreRect(rateMap, arenaDim_x, arenaDim
 lastSpikeT = times[-1] if len(times) != 0 else np.nan
 if lastSpikeT >= minGridnessT:
     print "\ngridness score = " , G_i
-    print "gridness correlation = " , crossCorr_i
-    print "gridness angles = " , angles_i
+    #print "gridness correlation = " , crossCorr_i
+    #print "gridness angles = " , angles_i
 else:
     print "Simulation too short, Gridness score NaN"
 

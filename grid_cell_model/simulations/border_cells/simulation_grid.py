@@ -15,6 +15,7 @@ from grid_cell_model.data_storage import DataStorage
 parser = getOptParser()
 parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
+parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 (o, args) = parser.parse_args()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
@@ -54,7 +55,6 @@ for trial_idx in range(o.ntrials):
         if o.border_cell_connect_method == "line":
             ei_net.connect_border_cells_line_method()
 
-
     try:
         ei_net.simulate(o.time, printTime=o.printTime)
     except NESTError as e:
@@ -62,12 +62,22 @@ for trial_idx in range(o.ntrials):
         print("Not saving the data. Trying to clean up if possible...")
         stop = True
     ei_net.endSimulation()
-    d['trials'].append(ei_net.getAllData())
+    # get simulation data
+    sim_data = ei_net.getAllData()
+    # add connection matrices if selected
+    if o.getConnMatrices:
+        print("Getting connection matrices...")
+        sim_data['connections'] = ei_net.getConnections()
+    # save simulation data
+    d['trials'].append(sim_data)
     d.flush()
     constrT, simT, totalT = ei_net.printTimes()
     overalT += totalT
     if stop:
         break
+
+
+        
 
 d.close()
 print("Script total run time: {0} s".format(overalT))

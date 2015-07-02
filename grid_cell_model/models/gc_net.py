@@ -201,14 +201,14 @@ class GridCellNetwork(object):
         return np.exp(-(d - mu)**2 / 2 / sigma**2)
 
     def create_border_cells(self, b_starts):
-	'''
+        '''
         Function to create border cells. 
         Border start coordinates are specified by the list of tuples in 
         b_starts. They are assumed to be end-to-end straight lines.
         '''
         raise NotImplementedError()
 
-		
+        
     def connect_border_cells_line_method(self, g_cells):	
         ''' 
         connect border cells to the grid cell population
@@ -245,7 +245,7 @@ class GridCellNetwork(object):
     def _generateGaussianBorderWeights(self, l, others, sigma):
         '''
         This is a variation of _generateGaussianWeights, where the weights are now
-        based on the minimum distance to some line, l, represented by a tuple of
+        based on the shortest distance to some line, l, represented by a tuple of
         Position2D objects. The idea is to simulate a border-like effect.
         Preferred directions are ignored since the "border" is static.
         '''
@@ -256,14 +256,15 @@ class GridCellNetwork(object):
         others = self._get_e_network_layout_flat()
         grid_cell_count = len(others.x)        
         for i in range(grid_cell_count):
+            #get network position of neuron
             p = Position2D(others.x[i],others.y[i])
-            # Calculate a: the minimum distance to line l from point p
+            # Calculate a: the closest point on line l from point p
             a = closest_point_to_line(p, l)
             # need np array types for compatibility with downstream functions...
             other = Position2D()
             other.x = np.ndarray((1,)); other.y = np.ndarray((1,))
             other.x[0] = p.x; other.y[0] = p.y
-            #  Calculate the gaussian weight to a
+            #  Calculate the gaussian weight to point a
             w.extend(self._generateGaussianWeights(a, other, 
                                                sigma, prefDir, 0.0))
 
@@ -296,7 +297,7 @@ class GridCellNetwork(object):
         others_e.x = X.ravel()
         others_e.y = Y.ravel()
 
-	return others_e
+        return others_e
 
     def _connect_network(self):
         '''Make network connections according to parameter settings.'''
