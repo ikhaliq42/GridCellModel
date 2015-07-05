@@ -24,7 +24,7 @@ noise = 'demo_output_data'
 trial_no = args.trial_no
 spike_mon_type = args.spike_mon_type
 neuron_idx = args.neuron_idx
-arenaDim_x = 200.0; arenaDim_y = 200.0
+arenaDim_x = 127.0; arenaDim_y = 127.0
 smoothingSigma=3.0
 sim_name = args.sim_name
 minGridnessT = 0.0
@@ -93,8 +93,8 @@ G_i, crossCorr_i, angles_i = cellGridnessScoreRect(rateMap, arenaDim_x, arenaDim
 lastSpikeT = times[-1] if len(times) != 0 else np.nan
 if lastSpikeT >= minGridnessT:
     print "\ngridness score = " , G_i
-    print "gridness correlation = " , crossCorr_i
-    print "gridness angles = " , angles_i
+    #print "gridness correlation = " , crossCorr_i
+    #print "gridness angles = " , angles_i
 else:
     print "Simulation too short, Gridness score NaN"
 
