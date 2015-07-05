@@ -48,7 +48,7 @@ import copy
 from ..analysis.image import Position2D, remapTwistedTorus
 from .construction.weights import (IsomorphicConstructor,
                                    ProbabilisticConstructor)
-from ..analysis.geometry import closest_point_to_line
+from ..analysis.geometry import closest_point_to_line, min_dist_to_line
 
 __all__ = ['GridCellNetwork']
 
@@ -251,22 +251,45 @@ class GridCellNetwork(object):
         '''
         w = []
         prefDir = Position2D(0.0, 0.0)
+        dim = Position2D()
+        dim.x = 1.0
+        dim.y = self.y_dim
               
         # Get grid cell position in neural sheet
         others = self._get_e_network_layout_flat()
         grid_cell_count = len(others.x)        
         for i in range(grid_cell_count):
             #get network position of neuron
-            p = Position2D(others.x[i],others.y[i])
-            # Calculate a: the closest point on line l from point p
-            a = closest_point_to_line(p, l)
+            pos = Position2D(others.x[i],others.y[i])
+            # calculate alternate points on a continuous torus (wrap around effect)
+            pp = [  Position2D(        pos.x,         pos.y), 
+                    Position2D(dim.x - pos.x,         pos.y), 
+                    Position2D(        pos.x, dim.y - pos.y),
+                    Position2D(dim.x - pos.x, dim.y - pos.y) ]
+            
+            # Calculate the gaussian weight: twisted torus mapping
+            '''
+            # Calculate a: the closest points on line l from points pp
+            cp = [closest_point_to_line(p, l) for p in pp]
             # need np array types for compatibility with downstream functions...
             other = Position2D()
             other.x = np.ndarray((1,)); other.y = np.ndarray((1,))
-            other.x[0] = p.x; other.y[0] = p.y
-            #  Calculate the gaussian weight to point a
-            w.extend(self._generateGaussianWeights(a, other, 
-                                               sigma, prefDir, 0.0))
+            dd = []
+            for i in range(len(cp)):
+                other.x[0] = pp[i].x; other.y[0] = pp[i].y                                
+                dd.append(remapTwistedTorus(cp[i], other, dim)) 
+            d = min(dd)
+            ww = np.exp(-d**2 / 2. / sigma**2)
+            w.extend(ww)
+            '''
+            
+            ''
+            # Calculate the gaussian weight: non twisted torus mapping
+            dd = [min_dist_to_line(p, l) for p in pp]
+            d = min(dd)
+            ww = np.exp(-d**2 / 2. / sigma**2) 
+            w.append(ww)
+            ''
 
         return np.array(w)
 
@@ -290,7 +313,6 @@ class GridCellNetwork(object):
         others_e  = Position2D()
         pd_norm_e = Position2D()
         a         = Position2D()
-
         X, Y = np.meshgrid(np.arange(self.Ne_x), np.arange(self.Ne_y))
         X = 1. * X / self.Ne_x
         Y = 1. * Y / self.Ne_y * self.y_dim
