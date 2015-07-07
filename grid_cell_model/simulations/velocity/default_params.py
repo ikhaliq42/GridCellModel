@@ -34,7 +34,7 @@ defaultParameters = {
         "nthreads"              :   1,
         "printTime"             :   0,            # This is boolean
 
-        "ratVelFName"           : '../../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat',
+        "ratVelFName"           : '../../../data/Sargolini_2006_x2.mat',
 
         "gridSep"               :   60,           # cm
 
@@ -50,7 +50,7 @@ defaultParameters = {
         "prefDirC_e"            :   4.0,
         "prefDirC_ee"           :   0.0,
         "prefDirC_i"            :   0.0,
-        "arenaSize"             :   180.0,        # cm
+        "arenaSize"             :   283.0,        # cm
 
         "NMDA_amount"           :   2.0,          # %
         "C_Mg"                  :      .0,        # mM; def is no Vm dependence
@@ -114,18 +114,18 @@ defaultParameters = {
         "E_AMPA"                :   0,            # mV
         "E_GABA_A"              :   -75,          # mV
 
-        "N_place_cells"         :   30,           # sqrt(total PC number)
+        "N_place_cells"         :   48,           # sqrt(total PC number)
         "pc_max_rate"           :   50.0,         # Hz
         "pc_conn_weight"        :   0.5,          # nS
-        "pc_field_std"          :   20.0,         # cm
+        "pc_field_std"          :   32.0,         # cm
         "bumpCurrentSlope"      :   0.53,         # neurons/s/pA, !! this will depend on prefDirC !!
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
 
         "ipc_ON"                :   0,            # bool
-        "ipc_N"                 :   30,           # sqrt(total IPC number)
+        "ipc_N"                 :   48,           # sqrt(total IPC number)
         "ipc_nconn"             :   10,
-        "ipc_field_std"         :   20.0,         # cm
+        "ipc_field_std"         :   32.0,         # cm
         "ipc_max_rate"          :   50.0,         # Hz
         "ipc_weight"            :   0.5,          # nS
 
