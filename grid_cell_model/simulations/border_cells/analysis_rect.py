@@ -20,11 +20,11 @@ parser.add_argument("--trial_no", type=int, help="Trial number, default = 0", de
 parser.add_argument("--recalc", type=bool, help="Force recals, default = 0", default=0)
 args = parser.parse_args()
 
-noise = 'demo_output_data'
+noise = 'output_data'
 trial_no = args.trial_no
 spike_mon_type = args.spike_mon_type
 neuron_idx = args.neuron_idx
-arenaDim_x = 200.0; arenaDim_y = 200.0
+arenaDim_x = 180.0; arenaDim_y = 180.0
 smoothingSigma=3.0
 sim_name = args.sim_name
 minGridnessT = 0.0
@@ -71,7 +71,6 @@ if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
     X, Y = np.meshgrid(xedges, yedges)
     rateMap *= 1e3 # should be Hz
     if recalc: 
-        import pdb; pdb.set_trace()
         del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap']
         del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/X']
         del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y']

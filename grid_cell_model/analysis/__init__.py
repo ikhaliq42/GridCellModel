@@ -39,4 +39,4 @@ A collection of modules/packages that deal with data analysis:
 '''
 
 __all__ = ['conversion', 'grid_cells', 'image','geometry', 'other', 'signal', 'spikes',
-        'statistics', "visitors", "Wavelets"]
+        'statistics', "visitors", "Wavelets","bumps"]

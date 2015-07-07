@@ -139,17 +139,18 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
                 bitSpikes(n_id, spikeSteps) += 1;
             }
         }
-
+        
         for (int n_id = 0; n_id < N; n_id++)
+        {
             for (int t = 0; t < szRate; t++)
             {
                 fr(n_id, t) = .0;
                 for (int s = 0; s < dtWlen; s++)
-                    if ((t+s) < szRate)
-                        fr(n_id, t) += bitSpikes(n_id, t+s);
+                    if((t+s) < szRate) {fr(n_id, t) += bitSpikes(n_id, t+s);}
             }
+        }
         """
-
+    
     err = weave.inline(code,
             ['N', 'szRate', 'dtWlen', 'lenSpikes', 'n_ids', 'spikeTimes',
                 'tstart', 'dt', 'bitSpikes', 'fr'],
@@ -157,6 +158,22 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
             compiler='gcc',
             extra_compile_args=['-O3'],
             verbose=2)
+    
+    '''
+    #Python version of weave.inline code - for debugging only
+    for i in range(lenSpikes):
+        spikeSteps = (spikeTimes[i] - tstart) / dt
+        if (spikeSteps >= 0 and spikeSteps < szRate):
+            n_id = n_ids[i]
+            bitSpikes[n_id, spikeSteps] = bitSpikes[n_id, spikeSteps] + 1
+    
+    for n_id in range(N):
+        for t in range(szRate):
+            fr[n_id, t] = 0.0
+            for s in range(dtWlen):
+                if ((t+s) < szRate): 
+                    fr[n_id, t] = fr[n_id, t] + bitSpikes[n_id, t+s]
+    '''
 
     #print "End sliding firing rate"
 
@@ -170,7 +187,7 @@ def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=
     '''
     This function is deprecated. Use the OO version instead
     '''
-    log_warn('This function is deprecated')
+    #log_warn('This function is deprecated')
     N = sheetSize[0]*sheetSize[1]
     F, tsteps = slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen)
 

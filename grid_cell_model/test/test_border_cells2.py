@@ -26,7 +26,7 @@ spike_detectors = nest.Create("spike_detector",4 , params={"withgid": True, "wit
 nest.Connect(border_cells, spike_detectors)
 
 # Load rat trajectory (scaled rectangle in same proportions as arena)
-data = scipy.io.loadmat("../../data/Sargolini_2006")
+data = scipy.io.loadmat("../../data/Sargolini_2006_scaled_180.mat")
 
 # set time step for rat position changes
 rat_dt = float(data['dt'].flatten()) * 1000
@@ -46,8 +46,8 @@ x_starts = [min(rat_pos_x), max(rat_pos_x), max(rat_pos_x), min(rat_pos_x)]
 y_starts = [max(rat_pos_y), max(rat_pos_y), min(rat_pos_y), min(rat_pos_y)]
 x_ends   = [max(rat_pos_x), max(rat_pos_x), min(rat_pos_x), min(rat_pos_x)]
 y_ends   = [max(rat_pos_y), min(rat_pos_y), min(rat_pos_y), max(rat_pos_y)]
-arena_dim_x = max(x_starts)-min(x_starts)
-arena_dim_y = max(y_starts)-min(y_starts)
+arena_dim_x = 180 #max(x_starts)-min(x_starts)
+arena_dim_y = 180 #max(y_starts)-min(y_starts)
 for i in range(len(x_starts)):
     nest.SetStatus([border_cells[i]], {"border_start_x": x_starts[i], "border_start_y": y_starts[i]})
     nest.SetStatus([border_cells[i]], {  "border_end_x":   x_ends[i],   "border_end_y":   y_ends[i]})
