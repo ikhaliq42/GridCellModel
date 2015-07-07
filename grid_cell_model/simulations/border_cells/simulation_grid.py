@@ -15,6 +15,8 @@ from grid_cell_model.data_storage import DataStorage
 parser = getOptParser()
 parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
+parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
+parser.add_argument("--bcConnMethod", type=str, default="line", help="Border cell connect method; default = line")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 (o, args) = parser.parse_args()
 
@@ -50,10 +52,12 @@ for trial_idx in range(o.ntrials):
     # border cells
     if o.bcON:
         # create the border cells
-        ei_net.create_border_cells()
+        ei_net.create_border_cells(N_per_border=o.bcNum)
         # connect border cells according to chosen method
         if o.border_cell_connect_method == "line":
-            ei_net.connect_border_cells_line_method()
+            ei_net.connect_border_cells_line_method(o.bc_conn_weight)
+        elif o.border_cell_connect_method == "none":
+            pass
 
     try:
         ei_net.simulate(o.time, printTime=o.printTime)

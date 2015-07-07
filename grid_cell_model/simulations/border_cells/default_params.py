@@ -126,7 +126,8 @@ defaultParameters = {
         "bc_field_std"          :   20.0,         # cm
         "bc_conn_weight"        :   0.5,          # bS
         "border_cell_connect_method" : "line",
-
+        "bc_N_per_border"		:	10,			  # per border
+        
         "ipc_ON"                :   0,            # bool
         "ipc_N"                 :   30,           # sqrt(total IPC number)
         "ipc_nconn"             :   10,
