@@ -34,7 +34,7 @@ defaultParameters = {
         "nthreads"              :   1,
         "printTime"             :   0,            # This is boolean
 
-        "ratVelFName"           : '../../../data/Sargolini_2006_scaled_127.mat',
+        "ratVelFName"           : '../../../data/Sargolini_2006_scaled_180.mat',
 
         "gridSep"               :   60,           # cm
 
