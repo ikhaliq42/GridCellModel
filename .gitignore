@@ -22,3 +22,7 @@ output_local
 
 /git_hooks
 /tags
+
+sim_*
+*.tar.gz
+*.tar.bz

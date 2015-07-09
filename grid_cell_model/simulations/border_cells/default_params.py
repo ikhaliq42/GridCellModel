@@ -118,15 +118,8 @@ defaultParameters = {
         "pc_max_rate"           :   50.0,         # Hz
         "pc_conn_weight"        :   0.5,          # nS
         "pc_field_std"          :   20.0,         # cm
-        "bumpCurrentSlope"      :   0.48616,         # neurons/s/pA, !! this will depend on prefDirC !!
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
-
-        "bc_max_rate"           :   50.0,         # Hz
-        "bc_field_std"          :   20.0,         # cm
-        "bc_conn_weight"        :   0.5,          # bS
-        "border_cell_connect_method" : "line",
-        "bc_N_per_border"		:	10,			  # per border
         
         "ipc_ON"                :   0,            # bool
         "ipc_N"                 :   30,           # sqrt(total IPC number)
@@ -134,6 +127,14 @@ defaultParameters = {
         "ipc_field_std"         :   20.0,         # cm
         "ipc_max_rate"          :   50.0,         # Hz
         "ipc_weight"            :   0.5,          # nS
+        
+        "bumpCurrentSlope"      :   0.48616,      # neurons/s/pA, !! this will depend on prefDirC !!
+
+        "bc_max_rate"           :   50.0,         # Hz
+        "bc_field_std"          :   20.0,         # cm
+        "bc_conn_weight"        :   0.5,          # bS
+        "border_cell_connect_method" : "line",
+        "bc_N_per_border"		:	10,			  # per border
 
         "noise_sigma"           :   150.0,        # pA
         "gammaNSample"          :   25,           # No. of neurons

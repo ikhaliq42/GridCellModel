@@ -18,9 +18,10 @@ parser.add_argument("--spike_mon_type", type=str, default='spikeMon_e')
 parser.add_argument("--neuron_idx", type=int, help="Index of neuron to analyse, default = 0", default=0)
 parser.add_argument("--trial_no", type=int, help="Trial number, default = 0", default=0)
 parser.add_argument("--recalc", type=bool, help="Force recals, default = 0", default=0)
+parser.add_argument("--noise", type=str, help="Noise sigma of simulation", default='150pA')
 args = parser.parse_args()
 
-noise = 'output_data'
+noise = args.noise
 trial_no = args.trial_no
 spike_mon_type = args.spike_mon_type
 neuron_idx = args.neuron_idx
@@ -30,7 +31,6 @@ sim_name = args.sim_name
 minGridnessT = 0.0
 args = parser.parse_args()
 recalc = args.recalc
-
 # open data file
 assert not (args.sim_name == "") 
 data = h5py.File(args.sim_name + '/' + noise + '/job00000_output.h5', 'r+')

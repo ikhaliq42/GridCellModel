@@ -15,8 +15,9 @@ data = h5py.File('output_dir/output_data/job00000_output.h5')
 print("Loading simulation data...")
 senders = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['senders'])
 times = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['times'])
-sheetSize = float(np.array(data['trials'][str(trial_no)]['options']['Ne']))
-sheetSize = (int(sheetSize), int(sheetSize * np.sqrt(3.0) / 2.0) + 1)
+Ne_x = float(d['trials'][str(trial_no)]['net_attr']['Ne_x'])
+Ne_y = float(d['trials'][str(trial_no)]['net_attr']['Ne_y'])
+sheetSize = (Ne_x, Ne_y)
 dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
 
 # plotting parameters

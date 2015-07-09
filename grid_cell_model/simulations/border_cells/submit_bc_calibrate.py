@@ -6,7 +6,7 @@ from grid_cell_model.submitting.base.templates import DemoSimulation
 from default_params import defaultParameters as dp
 
 sim_label = str(int(dp['noise_sigma'])) + "pA"
-sim = DemoSimulation('simulation_grid.py', sim_label, dp)
+sim = DemoSimulation('simulation_bc_calibrate.py', sim_label, dp)
 
 parser = sim.parser
 parser.add_argument('--nthreads', type=int, default=1,
@@ -28,7 +28,6 @@ p['nthreads']               = o.nthreads
 p['verbosity']              = o.verbosity
 p['pcON']                   = o.pcON
 p['bcON']                   = o.bcON
-p['velON']                  = 1
 p['bcNum']                  = dp['bc_N_per_border'] if o.bcNum is None else o.bcNum
 p['getConnMatrices']        = o.getConnMatrices
 p['bcConnMethod']           = o.bcConnMethod

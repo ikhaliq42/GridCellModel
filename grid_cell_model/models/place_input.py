@@ -21,6 +21,7 @@
 import numpy as np
 
 from scipy.io import loadmat
+from scipy import linalg
 
 
 class PlaceCellInput(object):
@@ -42,10 +43,13 @@ class PlaceCellInput(object):
         gridCenter  Offset of the center of grid fields (cm)
         fieldSigma  Sigma of the gaussians used to produce the template (cm)
         '''
-
-        self.sigma = fieldSigma
-
-
+        if type(fieldSigma) is int or type(fieldSigma) is float:        
+            self.Sigma = np.array([[fieldSigma ** 2, 0.0],[0.0, fieldSigma ** 2]])
+        else:
+            self.Sigma = fieldSigma
+        
+        #self.sigma = fieldSigma
+        
         self.Ne_x = Ne_x
         self.Ne_y = Ne_y
         self.arenaSize = arenaSize
@@ -64,12 +68,25 @@ class PlaceCellInput(object):
         
         X_mod = np.abs(np.mod(X - self.gridsep_x/2 - gridCenter[0], self.gridsep_x) - self.gridsep_x/2)
         Y_mod = np.abs(np.mod(Y - self.gridsep_y/2 - gridCenter[1], self.gridsep_y) - self.gridsep_y/2)
-        arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)
+        #arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)		
+        inv_Sig = linalg.inv(self.Sigma)
+        arena1 = np.zeros(X_mod.shape)
+        for i in range(X_mod.shape[0]):
+            for j in range(X_mod.shape[1]):
+                xy_mod = np.array([X_mod[i,j], Y_mod[i,j]])
+                a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
+                arena1[i,j] = np.exp(-a)
         
         shift_x = self.gridsep_x*np.cos(np.pi/3)
         shift_y = self.gridsep_x*np.sin(np.pi/3)
-        arena2 = np.exp(-( (X_mod - shift_x)**2 + (Y_mod-shift_y)**2)/2/self.sigma**2)
-
+        #arena2 = np.exp(-( (X_mod - shift_x)**2 + (Y_mod-shift_y)**2)/2/self.sigma**2)
+        arena2 = np.zeros(X_mod.shape)
+        for i in range(X_mod.shape[0]):
+            for j in range(X_mod.shape[1]):
+                xy_mod = np.array([X_mod[i,j] - shift_x, Y_mod[i,j] - shift_y])
+                a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
+                arena2[i,j] = np.exp(-a)
+        
         self.arena = arena1 + arena2
         self.arena = self.arena / np.max(self.arena)
         self.X= X
@@ -95,14 +112,13 @@ if __name__=="__main__":
     arenaSize = 180.
     gridsep = 70            # cm
     gridCenter = [0, 0]
-    
     pc = PlaceCellInput(Ne_x, Ne_y, arenaSize, gridsep, gridCenter)
     pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
     pcolormesh(pc.arena); axis('equal'); show()
     pcolormesh(pc.getSheetInput(.0, .0)); show()
     
     
-    vel_fname = '../../data/Sargolini_2006.mat'
+    vel_fname = '../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
     ratData = loadmat(vel_fname)
     pos_x = ratData['pos_x'].flatten()
     pos_y = ratData['pos_y'].flatten()

@@ -418,9 +418,20 @@ class NestGridCellNetwork(GridCellNetwork):
                         W_EI[target[0] - EStart, i] = \
                             nest.GetStatus([conns[e]], 'weight')[0]
             return W_EI
+        elif popType == 'P':
+            W_EI = np.zeros((len(self.E_pop), len(self.PC)))
+            for i in xrange(len(self.PC)):
+                print("Place cell {0} --> E neurons".format(i))
+                conns = nest.FindConnections([self.PC[i]])
+                for e in xrange(len(conns)):
+                    target = nest.GetStatus([conns[e]], 'target')
+                    if target[0] in self.E_pop:
+                        W_EI[target[0] - EStart, i] = \
+                            nest.GetStatus([conns[e]], 'weight')[0]
+            return W_EI
 
         else:
-            msg = 'popType must be either \'E\' or \'I\' or \'B\'. Got {0}'
+            msg = 'popType must be either \'E\' or \'I\' or \'B\' or \'P\'. Got {0}'
             raise ValueError(msg.format(popType))
 
     ###########################################################################
@@ -744,23 +755,29 @@ class NestGridCellNetwork(GridCellNetwork):
                     print("Target not in I_pop!")
         return W
 
-    def create_border_cells(self, b_starts=None, N_per_border=1):
+    def create_border_cells(self, borders=None, N_per_border=1, posIn=None):
     
-        if b_starts==None:
+        if borders==None:
             self._loadRatVelocities()
             max_x = max(self.rat_pos_x); min_x = min(self.rat_pos_x)
             max_y = max(self.rat_pos_y); min_y = min(self.rat_pos_y)
-            b_starts = [(min_x,max_y),(max_x,max_y),(max_x,min_y),(min_x,min_y)] 
+            b_starts = [(min_x,max_y),(max_x,max_y),(max_x,min_y),(min_x,min_y)]
+            b_ends = [(max_x,max_y),(max_x,min_y),(min_x,min_y),(min_x,max_y)]
+            borders = zip(b_starts,b_ends)
+
+        if posIn is None:
+            self._loadRatVelocities()
+            posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
     
-        self.border_cells, _ = self._create_generic_border_cells(b_starts, N_per_border,
-                                   self.no.bc_max_rate, self.no.bc_field_std)
+        self.border_cells, _ = self._create_generic_border_cells(borders, N_per_border,
+                                self.no.bc_max_rate, self.no.bc_field_std, posIn)
         
-    def _create_generic_border_cells(self, b_starts, N_per_border, maxRate, fieldStdDev, 
-                                           start=None, end=None, posIn=None):
+    def _create_generic_border_cells(self, borders, N_per_border, maxRate, fieldStdDev, 
+                                                posIn=None, start=None, end=None):
         '''
         Function to create border cells. 
-        Border start coordinates are specified by the list of tuples in 
-        b_starts. They are assumed to be end-to-end straight lines.
+        Border are specified by the list of tuples of tuples in borders, which define
+        straight lines.
         N_per_border sets the number of border cells assigned to each border
         '''             
 
@@ -771,23 +788,22 @@ class NestGridCellNetwork(GridCellNetwork):
             start = self.no.theta_start_t
         if end is None:
             end = self.no.time
-        if posIn is None:
-            self._loadRatVelocities()
-            posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
+
 
         # create the border cells
-        border_cells = nest.Create("border_cell_generator", len(b_starts) * N_per_border,
+        border_cells = nest.Create("border_cell_generator", len(borders) * N_per_border,
                              params={'rate'      : maxRate,
                                      'field_size': fieldStdDev,
                                      'start'     : start,
                                      'stop'      : end})
         
-        # derive border end points
-        n = len(b_starts)
-        b_ends = range(n)
-        for i in range(n-1):
-            b_ends[i] = b_starts[i+1][0], b_starts[i+1][1]
-        b_ends[n-1] = b_starts[0][0], b_starts[0][1]
+        # derive border start and end points
+        n = len(borders)
+        b_starts = []
+        b_ends = []
+        for i in range(n):
+            b_starts.append(borders[i][0])
+            b_ends.append(borders[i][1])
     
         # set the borders
         for i in range(0, len(b_starts), N_per_border):
@@ -808,6 +824,53 @@ class NestGridCellNetwork(GridCellNetwork):
                                'rat_pos_dt': posIn.pos_dt})
 
         return border_cells, spikeMon_b
+
+    def connect_border_cells_modified_place_cell_method(self, conn_weight):	
+        ''' 
+        connect border cells to the grid cell population using a modification
+        of the method used to connect the place cells. Here, the connection
+        standard deviation is altered in one direction to create a nearly uniform
+        spread of connections
+        Currently this method only works for horizontal and vertical borders,
+        but could be extended to any angle with a bit more work
+        '''
+        g_cell_count = len(self.E_pop)
+        b_cell_count = len(self.border_cells)
+
+        # get arena borders 
+        b_starts_x = nest.GetStatus(self.border_cells,"border_start_x")  
+        b_starts_y = nest.GetStatus(self.border_cells,"border_start_y")  
+        b_ends_x = nest.GetStatus(self.border_cells,"border_end_x")  
+        b_ends_y = nest.GetStatus(self.border_cells,"border_end_y")
+        
+        # how divergent the connections are, 3sigma rule --> division by 6.
+        connStdDev          = self.no.gridSep / 2. / 6.
+        Sigma_vert  = np.array([[connStdDev ** 2, 0.0],[0.0,             1e7]])
+        Sigma_horiz = np.array([[1e7            , 0.0],[0.0, connStdDev ** 2]])
+        bc_weight_threshold = 0.1
+
+        vert_bc_input  = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize,
+                                    self.no.gridSep, [.0, .0], Sigma_vert)
+        horiz_bc_input = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize,
+                                    self.no.gridSep, [.0, .0], Sigma_horiz)	
+        for bc_id in xrange(b_cell_count):								
+            ctr_x = (b_starts_x[bc_id] + b_starts_x[bc_id])/2
+            ctr_y = (b_starts_y[bc_id] + b_starts_y[bc_id])/2
+            is_horizontal = b_starts_y[bc_id] == b_ends_y[bc_id]
+            is_vertical = b_starts_x[bc_id] == b_ends_x[bc_id]
+            if is_horizontal:
+                w = horiz_bc_input.getSheetInput(ctr_x, ctr_y).flatten()
+            else:
+                w = vert_bc_input.getSheetInput(ctr_x, ctr_y).flatten()
+            gt_th = w > bc_weight_threshold
+            post = np.array(self.E_pop)[gt_th]
+            w    = w[gt_th]
+            nest.DivergentConnect(
+                [self.border_cells[bc_id]],
+                list(post),
+                weight=list(w * conn_weight),
+                delay=[self.no.delay] * len(w),
+                model='PC_AMPA')
 
     def connect_border_cells_line_method(self, conn_weight):	
         ''' 
@@ -879,6 +942,7 @@ class NestGridCellNetwork(GridCellNetwork):
         d['I_pop'          ] = np.array(self.I_pop)
         d['PC'             ] = np.array(self.PC)
         d['PC_start'       ] = np.array(self.PC_start)
+        d['border_cells'   ] = np.array(self.border_cells)
         d['net_Ne'         ] = self.net_Ne
         d['net_Ni'         ] = self.net_Ni
         d['rat_pos_x'      ] = getattr(self, 'rat_pos_x', np.nan)
@@ -1103,6 +1167,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         Get connection weight matrices. 
         Currently implements:
         B -> E
+        P -> E
         Returns dictionary of connections weights
         '''
         
@@ -1112,6 +1177,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         #d['I->E'] = self.getConnMatrix('I')
         #d['E->I'] = self.getConnMatrix('E')
         if self.border_cells != []: d['B->E'] = self.getConnMatrix('B')
+        #if self.PC           != []: d['P->E'] = self.getConnMatrix('P')
         
         return d
 

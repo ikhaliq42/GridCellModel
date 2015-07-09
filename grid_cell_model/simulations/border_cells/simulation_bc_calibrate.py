@@ -1,5 +1,4 @@
-'''Main simulation run: Run a test simulation using rat trajectory data
-
+'''Run a test simulation to calibrate the border cell connections to e cells
 This simulation will overwrite any old files that are present in the output
 directory.
 '''
@@ -11,9 +10,38 @@ from parameters import getOptParser
 from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork, ConstPosInputs
 from grid_cell_model.models.seeds import TrialSeedGenerator
 from grid_cell_model.data_storage import DataStorage
+from grid_cell_model.models.gc_net_nest import PosInputs
+
+def create_square_arena(arena_dim):
+    x_starts = [-arena_dim/2, arena_dim/2, arena_dim/2,-arena_dim/2]
+    y_starts = [ arena_dim/2, arena_dim/2,-arena_dim/2,-arena_dim/2]
+    x_ends   = [ arena_dim/2, arena_dim/2,-arena_dim/2,-arena_dim/2]
+    y_ends   = [ arena_dim/2,-arena_dim/2,-arena_dim/2, arena_dim/2]
+    return zip(zip(x_starts,y_starts), zip(x_ends, y_ends))
+
+def create_square_trajectory(sim_time, arena_borders, rat_dt, scale=1.0):
+    # Create simple rat trajectory (scaled rectangle in same proportions as arena)
+    steps_per_border = int(sim_time / 4.0 / rat_dt)
+    rat_x = []
+    rat_y = []        
+    for i in range(4):
+        # start and end points of rat trajectory
+        x_start = arena_borders[i][0][0] * scale
+        y_start = arena_borders[i][0][1] * scale
+        x_end  = arena_borders[i][1][0] * scale
+        y_end  = arena_borders[i][1][1] * scale
+        # x and y distances
+        x_dist = x_end - x_start
+        y_dist = y_end - y_start
+        step_x = x_dist / steps_per_border
+        step_y = y_dist / steps_per_border    
+        for n in range(0, steps_per_border): rat_x.append(x_start + n*step_x)
+        for m in range(0, steps_per_border): rat_y.append(y_start + m*step_y)
+    return PosInputs(rat_x, rat_y, rat_dt)
+
+###############################################################################
 
 parser = getOptParser()
-parser.add_argument("--velON", type=int, choices=[0, 1], default=0, help="Velocity inputs ON?")
 parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
@@ -40,8 +68,7 @@ for trial_idx in range(o.ntrials):
     d['net_params'] = ei_net.getNetParams()  # Common settings will stay
 
     # turn velocity inputs on
-    if o.velON:
-        ei_net.setVelocityCurrentInput_e()
+    ei_net.setVelocityCurrentInput_e()
     
     # place cells
     if o.pcON:
@@ -54,13 +81,13 @@ for trial_idx in range(o.ntrials):
     # border cells
     if o.bcON:
         # create the border cells
-        ei_net.create_border_cells(N_per_border=o.bcNum)
+        arena_borders = create_square_arena(o.arenaSize)
+        rat_trajectory = create_square_trajectory(o.time, arena_borders, rat_dt=20.0, scale=1.0)
+        ei_net.create_border_cells(arena_borders, o.bcNum, rat_trajectory)
         # connect border cells according to chosen method
-        if o.bcConnMethod == "line":
+        if o.border_cell_connect_method == "line":
             ei_net.connect_border_cells_line_method(o.bc_conn_weight)
-        elif o.bcConnMethod == "place":
-            ei_net.connect_border_cells_modified_place_cell_method(o.bc_conn_weight)
-        elif o.bcConnMethod == "none":
+        elif o.border_cell_connect_method == "none":
             pass
 
     try:

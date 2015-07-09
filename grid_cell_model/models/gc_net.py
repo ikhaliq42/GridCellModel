@@ -285,6 +285,7 @@ class GridCellNetwork(object):
             
             ''
             # Calculate the gaussian weight: non twisted torus mapping
+            ''
             dd = [min_dist_to_line(p, l) for p in pp]
             d = min(dd)
             ww = np.exp(-d**2 / 2. / sigma**2) 

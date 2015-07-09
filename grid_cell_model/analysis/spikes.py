@@ -26,6 +26,7 @@ Please use the classes defined above.
 import numpy as np
 import scipy
 import collections
+import scipy.sparse
 from scipy import weave
 
 from grid_cell_model.otherpkg.log import log_warn
@@ -92,7 +93,7 @@ __all__ = [
 #    return (r/winLen, times)
 
 
-def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
+def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen, sparse=False):
     '''
     Compute a firing rate with a sliding window from a tuple of spike data:
     spikes is a tuple(n_id, times), in which n_id is a list/array of neuron id
@@ -150,7 +151,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
             }
         }
         """
-    
+    ''
     err = weave.inline(code,
             ['N', 'szRate', 'dtWlen', 'lenSpikes', 'n_ids', 'spikeTimes',
                 'tstart', 'dt', 'bitSpikes', 'fr'],
@@ -159,6 +160,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
             extra_compile_args=['-O3'],
             verbose=2)
     
+    ''
     '''
     #Python version of weave.inline code - for debugging only
     for i in range(lenSpikes):
@@ -176,8 +178,16 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
     '''
 
     #print "End sliding firing rate"
-
-    return fr/(winLen*1e-3), times
+    
+    
+    if sparse:
+        # the following three lines may help to resolve memory errors
+        fr_sparse = scipy.sparse.lil_matrix(fr, dtype=scipy.float32)
+        fr_sparse = fr_sparse/(winLen*1e-3)
+        return fr_sparse, times
+    else:
+        return (fr/(winLen*1e-3)), times
+    
 
 
 
