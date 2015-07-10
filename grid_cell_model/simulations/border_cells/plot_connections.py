@@ -6,13 +6,14 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("path", type=str, help="Path to simulation data")
-parser.add_argument("noise", type=int, help="Noise sigma")
+parser.add_argument("noise", type=str, help="Noise sigma", default = '150pA')
 parser.add_argument("--type", type=str, default='border', help="Neuron type: place or border")
+parser.add_argument("--trial_no", type=int, default=0, help="Trial number")
 o = parser.parse_args()
 
-trial_no = 0
+trial_no = o.trial_no
 path = o.path
-noise = str(o.noise) + "pA"
+noise = o.noise
 type = o.type
 
 if type=='place':
@@ -33,7 +34,7 @@ for i in range(len(conns)):
     connections[type + str(i)] = conns[i].reshape(30,34)
 
 #save to matlab file
-scipy.io.savemat(path +'/' + noise + '/ConnMatrix.mat', mdict=connections)
+scipy.io.savemat(path +'/' + noise + '/ConnMatrix_trial_' + str(trial_no) + '.mat', mdict=connections)
 #plot data for first and second border cell
-ax = plotter(connections[type + str(1)])
-plt.show()
+#ax = plotter(connections[type + str(1)])
+#plt.show()

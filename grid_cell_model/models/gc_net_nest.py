@@ -836,6 +836,9 @@ class NestGridCellNetwork(GridCellNetwork):
         '''
         g_cell_count = len(self.E_pop)
         b_cell_count = len(self.border_cells)
+        
+        print("Calculating border cells to E_pop connection weights...")
+        print("E_pop =", g_cell_count, " cells in total." ),
 
         # get arena borders 
         b_starts_x = nest.GetStatus(self.border_cells,"border_start_x")  
@@ -853,9 +856,10 @@ class NestGridCellNetwork(GridCellNetwork):
                                     self.no.gridSep, [.0, .0], Sigma_vert)
         horiz_bc_input = PlaceCellInput(self.Ne_x, self.Ne_y, self.no.arenaSize,
                                     self.no.gridSep, [.0, .0], Sigma_horiz)	
-        for bc_id in xrange(b_cell_count):								
-            ctr_x = (b_starts_x[bc_id] + b_starts_x[bc_id])/2
-            ctr_y = (b_starts_y[bc_id] + b_starts_y[bc_id])/2
+        for bc_id in xrange(b_cell_count):	      
+            print("Border cell ", bc_id, " of ", b_cell_count-1, "...")
+            ctr_x = (b_starts_x[bc_id] + b_ends_x[bc_id])/2
+            ctr_y = (b_starts_y[bc_id] + b_ends_y[bc_id])/2
             is_horizontal = b_starts_y[bc_id] == b_ends_y[bc_id]
             is_vertical = b_starts_x[bc_id] == b_ends_x[bc_id]
             if is_horizontal:
@@ -890,14 +894,15 @@ class NestGridCellNetwork(GridCellNetwork):
         b_ends = [Position2D(p[0],p[1]) for p in zip(b_ends_x, b_ends_y)]
         borders = zip(b_starts, b_ends)
         
-        # get arena dimensions (assumed rectangular)
-        arenaDim = bounding_box_dimensions(b_starts)
+        #import pdb; pdb.set_trace()
+        # get arena dimensions (assumed square)
+        arenaDim = bouding_box_dimensions(borders)
 
         # get network dimensions
         networkDim = 1.0, self.y_dim
 
         # get lines in network that approximately correspond to arena borders
-        # and normalise to <0, sqrt(3)/2)
+        # and normalise to <0, sqrt(3)/2>
         lines = [scaleLine(border, arenaDim, networkDim) for border in borders]
         x_min = min(min([l[0].x for l in lines]), min([l[1].x for l in lines]))
         y_min = min(min([l[0].y for l in lines]), min([l[1].y for l in lines]))		

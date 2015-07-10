@@ -6,19 +6,21 @@ from math import sqrt
 def bounding_box(shape):
     ''' 
     Calculates the bounding box that encloses a 2D shape defined 
-    by a set of points.
+    by a set of lines.
     Returns the upper left corner and the lower right corner
     Shape is a list of Position2D tuples
     '''
-    min_x = shape[0].x
-    max_x = shape[0].x
-    min_y = shape[0].y
-    max_y = shape[0].y
-    for point in shape:
-	min_x = min(min_x, point.x)
-        max_x = max(max_x, point.x)
-        min_y = min(min_y, point.y)
-        max_y = max(max_y, point.y)
+    import pdb; pdb.set_trace()
+    min_x = shape[0][0].x
+    max_x = shape[0][0].x
+    min_y = shape[0][0].y
+    max_y = shape[0][0].y
+    for line in shape:
+        for point in line:
+            min_x = min(min_x, point.x)
+            max_x = max(max_x, point.x)
+            min_y = min(min_y, point.y)
+            max_y = max(max_y, point.y)
 
     #pdb.set_trace()
 
