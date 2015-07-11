@@ -896,9 +896,8 @@ class NestGridCellNetwork(GridCellNetwork):
         b_ends = [Position2D(p[0],p[1]) for p in zip(b_ends_x, b_ends_y)]
         borders = zip(b_starts, b_ends)
         
-        #import pdb; pdb.set_trace()
         # get arena dimensions (assumed square)
-        arenaDim = bouding_box_dimensions(borders)
+        arenaDim = bounding_box_dimensions(borders)
 
         # get network dimensions
         networkDim = 1.0, self.y_dim

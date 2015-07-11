@@ -10,7 +10,6 @@ def bounding_box(shape):
     Returns the upper left corner and the lower right corner
     Shape is a list of Position2D tuples
     '''
-    import pdb; pdb.set_trace()
     min_x = shape[0][0].x
     max_x = shape[0][0].x
     min_y = shape[0][0].y
