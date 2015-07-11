@@ -826,7 +826,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         return border_cells, spikeMon_b
 
-    def connect_border_cells_modified_place_cell_method(self, conn_weight):	
+    def connect_border_cells_modified_place_cell_method(self, conn_weight=None):	
         ''' 
         connect border cells to the grid cell population using a modification
         of the method used to connect the place cells. Here, the connection
@@ -838,6 +838,8 @@ class NestGridCellNetwork(GridCellNetwork):
         g_cell_count = len(self.E_pop)
         b_cell_count = len(self.border_cells)
         
+        if conn_weight == None: conn_weight = self.no.bc_conn_weight 
+
         print("Calculating border cells to E_pop connection weights...")
         print("E_pop =", g_cell_count, " cells in total." ),
 
@@ -859,7 +861,6 @@ class NestGridCellNetwork(GridCellNetwork):
                                     self.no.gridSep, [.0, .0], Sigma_horiz)	
         for bc_id in xrange(b_cell_count):	      
             print("Border cell ", bc_id, " of ", b_cell_count-1, "...")
-            import pdb; pdb.set_trace()
             ctr_x = (b_starts_x[bc_id] + b_ends_x[bc_id])/2
             ctr_y = (b_starts_y[bc_id] + b_ends_y[bc_id])/2
             is_horizontal = b_starts_y[bc_id] == b_ends_y[bc_id]
@@ -878,7 +879,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 delay=[self.no.delay] * len(w),
                 model='PC_AMPA')
 
-    def connect_border_cells_line_method(self, conn_weight):	
+    def connect_border_cells_line_method(self, conn_weight=None):	
         ''' 
         connect border cells to the grid cell population
         by projecting a "line" on the neural sheet corresponding to the
@@ -886,6 +887,8 @@ class NestGridCellNetwork(GridCellNetwork):
         '''
         g_cell_count = len(self.E_pop)
         b_cell_count = len(self.border_cells)
+
+        if conn_weight == None: conn_weight = self.no.bc_conn_weight        
 
         # get arena borders 
         b_starts_x = nest.GetStatus(self.border_cells,"border_start_x")  

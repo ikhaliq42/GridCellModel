@@ -54,14 +54,7 @@ data_path = '/trials/0/'+spike_mon_type+'/events/'
 if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
               data['trials'][str(trial_no)][spike_mon_type]['events'] or recalc: 
     # extract single neuron spike times
-    spikes = np.zeros(sum(senders == neuron_idx))
-    j = 0
-    print("Extracting single neuron data...")
-    length = len(senders)
-    for i in range(length):
-        progress = round(float(i)/length*100.0,1)
-        sys.stdout.write('\rProgress: %g %%' % (progress))
-        if (senders[i] == neuron_idx): spikes[j] = times[i]; j += 1
+    spikes = np.extract(senders == neuron_idx, times)
      
     # create a spatial rate map if one does not already exist
     print("\nGenerating spatial map...")   
