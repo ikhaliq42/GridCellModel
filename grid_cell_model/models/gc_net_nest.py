@@ -858,6 +858,7 @@ class NestGridCellNetwork(GridCellNetwork):
                                     self.no.gridSep, [.0, .0], Sigma_horiz)	
         for bc_id in xrange(b_cell_count):	      
             print("Border cell ", bc_id, " of ", b_cell_count-1, "...")
+            import pdb; pdb.set_trace()
             ctr_x = (b_starts_x[bc_id] + b_ends_x[bc_id])/2
             ctr_y = (b_starts_y[bc_id] + b_ends_y[bc_id])/2
             is_horizontal = b_starts_y[bc_id] == b_ends_y[bc_id]
