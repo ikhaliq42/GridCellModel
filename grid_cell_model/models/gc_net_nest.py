@@ -806,10 +806,11 @@ class NestGridCellNetwork(GridCellNetwork):
             b_ends.append(borders[i][1])
     
         # set the borders
-        for i in range(0, len(b_starts), N_per_border):
-            nest.SetStatus(border_cells[i:i+N_per_border], {"border_start_x": b_starts[i][0],
+        for i in range(len(b_starts)):
+            m = i * N_per_border; n = (i+1) * N_per_border
+            nest.SetStatus(border_cells[m:n], {"border_start_x": b_starts[i][0],
                                                 "border_start_y": b_starts[i][1]})
-            nest.SetStatus(border_cells[i:i+N_per_border], {"border_end_x": b_ends[i][0], 
+            nest.SetStatus(border_cells[m:n], {"border_end_x": b_ends[i][0], 
                                                        "border_end_y": b_ends[i][1]})
 
         # add a spike detector
