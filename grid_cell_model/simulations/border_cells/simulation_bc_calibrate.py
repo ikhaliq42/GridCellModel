@@ -1,4 +1,5 @@
 '''Run a test simulation to calibrate the border cell connections to e cells
+Runs a separate trial for each border of a square arena
 This simulation will overwrite any old files that are present in the output
 directory.
 '''
@@ -7,46 +8,18 @@ from __future__ import absolute_import, print_function, division
 from nest.hl_api import NESTError
 
 from parameters import getOptParser
-from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork, ConstPosInputs
+from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork, ConstPosInputs, PosInputs
 from grid_cell_model.models.seeds import TrialSeedGenerator
 from grid_cell_model.data_storage import DataStorage
 from grid_cell_model.models.gc_net_nest import PosInputs
-
-def create_square_arena(arena_dim):
-    x_starts = [-arena_dim/2, arena_dim/2, arena_dim/2,-arena_dim/2]
-    y_starts = [ arena_dim/2, arena_dim/2,-arena_dim/2,-arena_dim/2]
-    x_ends   = [ arena_dim/2, arena_dim/2,-arena_dim/2,-arena_dim/2]
-    y_ends   = [ arena_dim/2,-arena_dim/2,-arena_dim/2, arena_dim/2]
-    return zip(zip(x_starts,y_starts), zip(x_ends, y_ends))
-
-def create_square_trajectory(sim_time, arena_borders, rat_dt, scale=1.0):
-    # Create simple rat trajectory (scaled rectangle in same proportions as arena)
-    steps_per_border = int(sim_time / 4.0 / rat_dt)
-    rat_x = []
-    rat_y = []        
-    for i in range(4):
-        # start and end points of rat trajectory
-        x_start = arena_borders[i][0][0] * scale
-        y_start = arena_borders[i][0][1] * scale
-        x_end  = arena_borders[i][1][0] * scale
-        y_end  = arena_borders[i][1][1] * scale
-        # x and y distances
-        x_dist = x_end - x_start
-        y_dist = y_end - y_start
-        step_x = x_dist / steps_per_border
-        step_y = y_dist / steps_per_border    
-        for n in range(0, steps_per_border): rat_x.append(x_start + n*step_x)
-        for m in range(0, steps_per_border): rat_y.append(y_start + m*step_y)
-    return PosInputs(rat_x, rat_y, rat_dt)
-
-###############################################################################
+import numpy as np
 
 parser = getOptParser()
 parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
-parser.add_argument("--bcConnMethod", type=str, default="line", help="Border cell connect method; default = line")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
+parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = place")
 (o, args) = parser.parse_args()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
@@ -56,12 +29,20 @@ d['trials'] = []
 
 overalT = 0.
 stop = False
+
+rat_dt = 20.0
+
+
 ###############################################################################
 seed_gen = TrialSeedGenerator(int(o.master_seed))
 for trial_idx in range(o.ntrials):
     seed_gen.set_generators(trial_idx)  # Each trial is reproducible
     d['master_seed'] = int(o.master_seed)
     d['invalidated'] = 1
+
+    # override default trajectory
+    directions = ['N','E','S','W']
+    o.ratVelFName = '../../../data/bc_calibration/bc_calibration_traj_{0}.mat'.format(directions[trial_idx])
 
     #const_v = [0.0, -o.Ivel]
     ei_net = BasicGridCellNetwork(o, simulationOpts=None)
@@ -73,21 +54,21 @@ for trial_idx in range(o.ntrials):
     # place cells
     if o.pcON:
         # activate place cells (including start place cells))
-        ei_net.setPlaceCells()
+        ei_net.setPlaceCells(posIn=rat_trajectory)
     else:
         # activate start place cells only
-        ei_net.setStartPlaceCells(ConstPosInputs(0, 0)) 
+        ei_net.setStartPlaceCells(posIn=rat_trajectory) 
 
     # border cells
     if o.bcON:
         # create the border cells
-        arena_borders = create_square_arena(o.arenaSize)
-        rat_trajectory = create_square_trajectory(o.time, arena_borders, rat_dt=20.0, scale=1.0)
-        ei_net.create_border_cells(arena_borders, o.bcNum, rat_trajectory)
+        ei_net.create_border_cells([arena_borders[trial_idx]], o.bcNum, posIn=rat_trajectory)
         # connect border cells according to chosen method
-        if o.border_cell_connect_method == "line":
+        if o.bcConnMethod == "line":
             ei_net.connect_border_cells_line_method(o.bc_conn_weight)
-        elif o.border_cell_connect_method == "none":
+        elif o.bcConnMethod == "place":
+            ei_net.connect_border_cells_modified_place_cell_method(o.bc_conn_weight)
+        else:
             pass
 
     try:

@@ -18,7 +18,7 @@ parser.add_argument("--spcON", type=int, choices=[0, 1], default=1, help="Start 
 parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
-parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = line")
+parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = place")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 (o, args) = parser.parse_args()
 

@@ -133,8 +133,7 @@ defaultParameters = {
         "bc_max_rate"           :   50.0,         # Hz
         "bc_field_std"          :   20.0,         # cm
         "bc_conn_weight"        :   0.5,          # bS
-        "border_cell_connect_method" : "line",
-        "bc_N_per_border"		:	10,			  # per border
+        "bc_N_per_border"	:	10,			  # per border
 
         "noise_sigma"           :   150.0,        # pA
         "gammaNSample"          :   25,           # No. of neurons

@@ -7,10 +7,11 @@ from grid_cell_model.analysis.spikes import slidingFiringRateTuple
 
 parser = argparse.ArgumentParser()
 parser.add_argument("path", type=str, help="Path to simulation data")
-parser.add_argument("noise", type=int, help="Noise sigma")
+parser.add_argument("--noise", type=int, default=150, help="Noise sigma")
+parser.add_argument("--trial_no", type=int, default=0, help="index number of trial") 
 o = parser.parse_args()
 
-trial_no = str(0)
+trial_no = o.trial_no
 path = o.path
 noise = str(o.noise) + 'pA'
 
@@ -45,8 +46,8 @@ winLen = 1.0
 print("Estimating firing rate (sliding window method)...")
 e_spikes = e_senders, e_times
 b_spikes = b_senders, b_times
-e_firing_rates, _ = slidingFiringRateTuple(e_spikes, N_e, tstart, tend, dt, winLen, sparse=True)
-b_firing_rates, _ = slidingFiringRateTuple(b_spikes, N_b, tstart, tend, dt, winLen, sparse=True)
+e_firing_rates, _ = slidingFiringRateTuple(e_spikes, N_e, tstart, tend, 1.0, winLen)
+b_firing_rates, _ = slidingFiringRateTuple(b_spikes, N_b, tstart, tend, 1.0, winLen)
 #import pdb; pdb.set_trace()
 
 # calculate weight matrix (row are b cells, columns are e cells)
@@ -60,7 +61,7 @@ for i in range(W.shape[0]):
     if w_max != 0.0: W[i,:] = W[i,:] / w_max
 
 # save params to matlab file
-scipy.io.savemat(path +'/' + noise + '/bc_Weights.mat', mdict={'WeightMatrix': W})
+scipy.io.savemat(path +'/' + noise + '/bc_Weights_trial' + str(trial_no)  + '.mat', mdict={'WeightMatrix': W})
 
 # close data file
 data.close()

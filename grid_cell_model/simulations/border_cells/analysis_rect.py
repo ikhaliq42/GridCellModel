@@ -46,7 +46,7 @@ sim_time = float(np.array(data['trials'][str(trial_no)]['options']['time']))
 sim_dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
 theta_start_t = float(np.array(data['trials'][str(trial_no)]['options']['theta_start_t']))
 gridSep = float(np.array(data['trials'][str(trial_no)]['options']['gridSep']))
-
+import pdb; pdb.set_trace()
 # data path
 data_path = '/trials/0/'+spike_mon_type+'/events/'
 
@@ -100,7 +100,7 @@ colorbar()
 axis('equal')
 axis('off')
 print("Saving plot")
-savefig('{0}rateMap_{1}_{2}.png'.format(sim_name+'/'+noise+'/', spike_mon_type, neuron_idx))
+savefig('{0}trial_{1}_rateMap_{2}_{3}.png'.format(sim_name+'/'+noise+'/',str(trial_no) ,spike_mon_type, neuron_idx))
 
 
 
