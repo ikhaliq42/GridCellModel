@@ -15,11 +15,11 @@ from grid_cell_model.models.gc_net_nest import PosInputs
 import numpy as np
 
 parser = getOptParser()
-parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
-parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
+parser.add_argument("--pcON", type=int, choices=[0, 1], default=1, help="Place cell input ON?")
+parser.add_argument("--bcON", type=int, choices=[0, 1], default=1, help="Border cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
-parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
-parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = place")
+parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=1, help="Get connection matrices?")
+parser.add_argument("--bcConnMethod", type=str, default="none", help="Border cell connect method; default = none")
 (o, args) = parser.parse_args()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
@@ -29,8 +29,6 @@ d['trials'] = []
 
 overalT = 0.
 stop = False
-
-rat_dt = 20.0
 
 
 ###############################################################################
@@ -54,15 +52,18 @@ for trial_idx in range(o.ntrials):
     # place cells
     if o.pcON:
         # activate place cells (including start place cells))
-        ei_net.setPlaceCells(posIn=rat_trajectory)
+        ei_net.setPlaceCells()
     else:
         # activate start place cells only
-        ei_net.setStartPlaceCells(posIn=rat_trajectory) 
+	start_x = arena_borders[trial_idx][0].pos_x
+	start_y = arena_borders[trial_idx][0].pos_y
+        ei_net.setStartPlaceCells(ConstPosInputs(0.0,0.0)) 
 
     # border cells
     if o.bcON:
         # create the border cells
-        ei_net.create_border_cells([arena_borders[trial_idx]], o.bcNum, posIn=rat_trajectory)
+        borders=[((-90.0,90.0),(90.0,90.0)),((90.0,90.0),(90.0,-90.0)),((90.0,-90.0),(-90.0,-90.0)),((-90.0,-90.0),(-90.0,90.0))]
+        ei_net.create_border_cells(borders, N_per_border=o.bcNum)
         # connect border cells according to chosen method
         if o.bcConnMethod == "line":
             ei_net.connect_border_cells_line_method(o.bc_conn_weight)
@@ -92,8 +93,7 @@ for trial_idx in range(o.ntrials):
     if stop:
         break
 
-
-        
+ 
 
 d.close()
 print("Script total run time: {0} s".format(overalT))

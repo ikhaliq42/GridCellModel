@@ -492,7 +492,7 @@ class NestGridCellNetwork(GridCellNetwork):
 
         self.velocityInputInitialized = True
 
-    def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None):
+    def setConstantVelocityCurrent_e(self, vel, start_t=None, end_t=None, startPos=None):
         '''
         Set the model so that there is only a constant velocity current input.
         '''
@@ -536,7 +536,10 @@ class NestGridCellNetwork(GridCellNetwork):
         nest.SetStatus(self.E_pop, "pref_dir_y", self.prefDirs_e[:, 1])
         nest.SetStatus(self.E_pop, "velC", self.velC)
 
-        self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
+        if startPos == None:
+            self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
+        else:
+            self.setStartPlaceCells(startPos)
 
         self.velocityInputInitialized = True
 
@@ -756,24 +759,30 @@ class NestGridCellNetwork(GridCellNetwork):
         return W
 
     def create_border_cells(self, borders=None, N_per_border=1, posIn=None):
-    
+
         if borders==None:
             self._loadRatVelocities()
-            max_x = max(self.rat_pos_x); min_x = min(self.rat_pos_x)
-            max_y = max(self.rat_pos_y); min_y = min(self.rat_pos_y)
-            b_starts = [(min_x,max_y),(max_x,max_y),(max_x,min_y),(min_x,min_y)]
-            b_ends = [(max_x,max_y),(max_x,min_y),(min_x,min_y),(min_x,max_y)]
-            borders = zip(b_starts,b_ends)
+            if 'border_starts_x' in self.ratData:
+                starts_x = self.ratData['border_starts_x'].flatten().tolist()
+                starts_y = self.ratData['border_starts_y'].flatten().tolist()
+                ends_x   = self.ratData['border_ends_x'].flatten().tolist()
+                ends_y   = self.ratData['border_ends_y'].flatten().tolist()
+                borders = zip(zip(starts_x,starts_y),zip(ends_x,ends_y))
+            else:
+                max_x = max(self.rat_pos_x); min_x = min(self.rat_pos_x)
+                max_y = max(self.rat_pos_y); min_y = min(self.rat_pos_y)
+                b_starts = [(min_x,max_y),(max_x,max_y),(max_x,min_y),(min_x,min_y)]
+                b_ends = [(max_x,max_y),(max_x,min_y),(min_x,min_y),(min_x,max_y)]
+                borders = zip(b_starts,b_ends)
 
-        if posIn is None:
-            self._loadRatVelocities()
+        if posIn is None:        
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
     
         self.border_cells, _ = self._create_generic_border_cells(borders, N_per_border,
                                 self.no.bc_max_rate, self.no.bc_field_std, posIn)
         
     def _create_generic_border_cells(self, borders, N_per_border, maxRate, fieldStdDev, 
-                                                posIn=None, start=None, end=None):
+                                                posIn, start=None, end=None):
         '''
         Function to create border cells. 
         Border are specified by the list of tuples of tuples in borders, which define
@@ -788,7 +797,6 @@ class NestGridCellNetwork(GridCellNetwork):
             start = self.no.theta_start_t
         if end is None:
             end = self.no.time
-
 
         # create the border cells
         border_cells = nest.Create("border_cell_generator", len(borders) * N_per_border,
@@ -1201,7 +1209,8 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
                  vel=[0.0, 0.0],
                  nrec_spikes=(None, None),
                  stateRecord_type='middle-center',
-                 stateRecParams=(None, None)):
+                 stateRecParams=(None, None),
+                 startPos=None):
         '''
         Generate the network.
 

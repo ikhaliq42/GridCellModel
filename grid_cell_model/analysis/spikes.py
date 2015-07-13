@@ -93,7 +93,7 @@ __all__ = [
 #    return (r/winLen, times)
 
 
-def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
+def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen, return_sparse=False):
     '''
     Compute a firing rate with a sliding window from a tuple of spike data:
     spikes is a tuple(n_id, times), in which n_id is a list/array of neuron id
@@ -179,7 +179,11 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen):
 
     #print "End sliding firing rate"
 
-    return (fr/(winLen*1e-3)), times
+    if return_sparse:
+        fr_sparse = scipy.sparse.lil_matrix(fr)
+        return (fr_sparse/(winLen*1e-3)), times
+    else:
+        return (fr/(winLen*1e-3)), times
     
 
 

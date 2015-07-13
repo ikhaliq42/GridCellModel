@@ -2,6 +2,7 @@ import h5py
 import matplotlib.pyplot as mpl
 import numpy as np
 import scipy.io
+import scipy.stats
 import argparse
 from grid_cell_model.analysis.spikes import slidingFiringRateTuple
 
@@ -20,6 +21,7 @@ data = h5py.File(path +'/' + noise + '/job00000_output.h5','r')
 
 # ****************** load simulation data *************************************************
 print("Loading simulation data...")
+import pdb; pdb.set_trace()
 # grid cell spikes
 e_senders = np.array(data['trials'][str(trial_no)]['spikeMon_e']['events']['senders'], dtype=np.int32)
 e_times = np.array(data['trials'][str(trial_no)]['spikeMon_e']['events']['times'], dtype=np.float32)
@@ -36,7 +38,6 @@ dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
 #simulation time
 tstart = float(np.array(data['trials'][str(trial_no)]['options']['theta_start_t']))
 tend = float(np.array(data['trials'][str(trial_no)]['options']['time']))
-
 # *****************************************************************************************
 
 # other parameters
@@ -46,13 +47,16 @@ winLen = 1.0
 print("Estimating firing rate (sliding window method)...")
 e_spikes = e_senders, e_times
 b_spikes = b_senders, b_times
-e_firing_rates, _ = slidingFiringRateTuple(e_spikes, N_e, tstart, tend, 1.0, winLen)
-b_firing_rates, _ = slidingFiringRateTuple(b_spikes, N_b, tstart, tend, 1.0, winLen)
-#import pdb; pdb.set_trace()
+e_firing_rates, _ = slidingFiringRateTuple(e_spikes, N_e, tstart, tend, dt, winLen, True)
+b_firing_rates, _ = slidingFiringRateTuple(b_spikes, N_b, tstart, tend, dt, winLen, True)
+
 
 # calculate weight matrix (row are b cells, columns are e cells)
 print("Calculating weight matix...")
 W = b_firing_rates.dot(e_firing_rates.transpose())
+
+# also get spike counts for each grid cell for information purposes
+spike_counts_e = scipy.stats.itemfreq(e_senders)
 
 # normalise weightings
 print("Normalising...")
@@ -61,7 +65,11 @@ for i in range(W.shape[0]):
     if w_max != 0.0: W[i,:] = W[i,:] / w_max
 
 # save params to matlab file
-scipy.io.savemat(path +'/' + noise + '/bc_Weights_trial' + str(trial_no)  + '.mat', mdict={'WeightMatrix': W})
+scipy.io.savemat(path +'/' + noise + '/bc_Weights_trial' + str(trial_no)  + '.mat', 
+                             mdict={'WeightMatrix': W, 
+                                  'spike_counts_e':spike_counts_e, 
+                                     'binSpikes_x':binSpikes_x, 
+                                     'binSpikes_y':binSpikes_y})
 
 # close data file
 data.close()

@@ -46,7 +46,6 @@ sim_time = float(np.array(data['trials'][str(trial_no)]['options']['time']))
 sim_dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
 theta_start_t = float(np.array(data['trials'][str(trial_no)]['options']['theta_start_t']))
 gridSep = float(np.array(data['trials'][str(trial_no)]['options']['gridSep']))
-import pdb; pdb.set_trace()
 # data path
 data_path = '/trials/0/'+spike_mon_type+'/events/'
 

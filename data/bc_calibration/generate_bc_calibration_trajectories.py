@@ -53,5 +53,9 @@ directions = ['N','E','S','W']
 for i in range(len(arena_borders)):
     rat_traj = create_trajectory(o.time, [arena_borders[i]], o.rat_dt, scale=1.0)
     output_fname = "bc_calibration_traj_{0}.mat".format(directions[i])
-    data = {'pos_x' : rat_traj.pos_x, 'pos_y' : rat_traj.pos_y, 'dt' : rat_traj.pos_dt}
+    data = {'pos_x' : rat_traj.pos_x, 'pos_y' : rat_traj.pos_y, 'dt' : rat_traj.pos_dt/1e3}
+    data['border_starts_x'] = arena_borders[i][0][0]
+    data['border_starts_y'] = arena_borders[i][0][1]
+    data['border_ends_x'] = arena_borders[i][1][0]
+    data['border_ends_y'] = arena_borders[i][1][1]
     scipy.io.savemat(output_fname,mdict=data)

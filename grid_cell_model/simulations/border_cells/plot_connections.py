@@ -6,7 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("path", type=str, help="Path to simulation data")
-parser.add_argument("noise", type=str, help="Noise sigma", default = '150pA')
+parser.add_argument("--noise", type=str, help="Noise sigma", default = '150pA')
 parser.add_argument("--type", type=str, default='border', help="Neuron type: place or border")
 parser.add_argument("--trial_no", type=int, default=0, help="Trial number")
 o = parser.parse_args()
