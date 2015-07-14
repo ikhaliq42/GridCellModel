@@ -35,6 +35,7 @@ defaultParameters = {
         "printTime"             :   0,            # This is boolean
 
         "ratVelFName"           : '../../../data/Sargolini_2006_scaled_180.mat',
+        "bc_connection_weights" : '../../../data/border_weights_10cm_margin.mat',
 
         "gridSep"               :   60,           # cm
 
@@ -120,6 +121,7 @@ defaultParameters = {
         "pc_field_std"          :   20.0,         # cm
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
+        "pc_distribution"       :   'uniform',
         
         "ipc_ON"                :   0,            # bool
         "ipc_N"                 :   30,           # sqrt(total IPC number)
@@ -133,7 +135,7 @@ defaultParameters = {
         "bc_max_rate"           :   50.0,         # Hz
         "bc_field_std"          :   20.0,         # cm
         "bc_conn_weight"        :   0.5,          # bS
-        "bc_N_per_border"	:	10,			  # per border
+        "bc_N_per_border"	    :	10,			  # per border
 
         "noise_sigma"           :   150.0,        # pA
         "gammaNSample"          :   25,           # No. of neurons

@@ -13,12 +13,13 @@ sim = DemoSimulation('simulation_static.py', sim_label, dp)
 parser = sim.parser
 parser.add_argument('--nthreads', type=int, default=1,
                     help='Number of simulation threads.')
+parser.add_argument("--velON", type=int, choices=[0, 1], default=0, help="Velocity inputs ON?")
 parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 parser.add_argument("--spcON", type=int, choices=[0, 1], default=0, help="Start cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
-parser.add_argument("--bcConnMethod", type=str, default="line", help="Border cell connect method; default = line")
+parser.add_argument("--bcConnMethod", type=str, default="predef", help="Border cell connect method; default = predef")
 o = parser.parse_args()
 
 p = {}
@@ -30,7 +31,7 @@ p['verbosity']              = o.verbosity
 p['pcON']                   = o.pcON
 p['spcON']                  = o.spcON
 p['bcON']                   = o.bcON
-p['velON']                  = 0
+p['velON']                  = o.velON
 p['bcNum']                  = dp['bc_N_per_border'] if o.bcNum is None else o.bcNum
 p['getConnMatrices']        = o.getConnMatrices
 p['bcConnMethod']           = o.bcConnMethod

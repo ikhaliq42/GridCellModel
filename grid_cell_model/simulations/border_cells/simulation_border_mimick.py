@@ -1,4 +1,4 @@
-'''Main simulation run: Run a test simulation using rat trajectory data
+'''Main simulation run: Simulation which mimicks border cells using and chain of place cells
 
 This simulation will overwrite any old files that are present in the output
 directory.
@@ -16,11 +16,14 @@ parser = getOptParser()
 parser.add_argument("--velON", type=int, choices=[0, 1], default=1, help="Velocity inputs ON?")
 parser.add_argument("--spcON", type=int, choices=[0, 1], default=1, help="Start place cell input ON?")
 parser.add_argument("--pcON", type=int, choices=[0, 1], default=1, help="Place cell input ON?")
-parser.add_argument("--bcON", type=int, choices=[0, 1], default=1, help="Border cell input ON?")
+parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
+parser.add_argument("--pcNum", type=int, required=True, help="Number of place cells mimicking eack border")
 parser.add_argument("--bcConnMethod", type=str, default="predef", help="Border cell connect method; default = predef")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 (o, args) = parser.parse_args()
+
+o.N_place_cells = o.pcNum # override this value
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
                                                    o.fileNamePrefix, o.job_num)
@@ -32,7 +35,8 @@ startPos_x = [-80.0, 80.0, 80.0,-80.0]
 startPos_y = [ 80.0, 80.0,-80.0,-80.0]
 endPos_x   = [ 80.0, 80.0,-80.0,-80.0]
 endPos_y   = [ 80.0,-80.0,-80.0, 80.0]
-arena_borders = zip(zip(startPos_x,startPos_y),zip(endPos_x,endPos_y))
+borders = zip(zip(startPos_x,startPos_y),zip(endPos_x,endPos_y))
+border_dim = max(startPos_x) - min(startPos_x) , max(startPos_y) - min(startPos_y)
 
 overalT = 0.
 stop = False
@@ -54,7 +58,7 @@ for trial_idx in range(o.ntrials):
     # place cells
     if o.pcON:
         # activate place cells (including start place cells))
-        ei_net.setPlaceCells()
+        ei_net.setPlaceCells(distribution='box_outline', boxSize=border_dim)
     elif o.spcON:
         # activate start place cells only
         ei_net.setStartPlaceCells(ConstPosInputs(0, 0))
@@ -64,7 +68,7 @@ for trial_idx in range(o.ntrials):
     # border cells
     if o.bcON:
         # create the border cells
-        ei_net.create_border_cells(borders=arena_borders, N_per_border=o.bcNum)
+        ei_net.create_border_cells(borders=borders, N_per_border=o.bcNum)
         # connect border cells according to chosen method
         if o.bcConnMethod == "line":
             ei_net.connect_border_cells_line_method(o.bc_conn_weight)

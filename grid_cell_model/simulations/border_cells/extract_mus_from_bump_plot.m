@@ -1,5 +1,5 @@
 path = 'sim_bc_calibrate_5secs/150pA/';
-num_trials = 1;
+num_trials = 4;
 mu_x = [];
 mu_y = [];
 for i = 0:num_trials-1

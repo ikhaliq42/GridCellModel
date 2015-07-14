@@ -87,8 +87,6 @@ class PlaceCells(object):
         raise NotImplementedError
 
 
-
-
 class UniformBoxPlaceCells(PlaceCells):
     '''
     Generate a uniform distribution of place cells in a 2D environment of a
@@ -161,7 +159,40 @@ class UniformBoxPlaceCells(PlaceCells):
 
         return (field, positions)
 
+class BoxOutlinePlaceCells():
+    '''
+    Similr to UniformBoxPlaceCells but only the outer perimeter.
+    '''
 
+    def __init__(self, boxSize, N, maxRates, widths):
+        '''
+        N        A tuple containing number of place cells in each dimension (X, Y)
+        maxRates An array of size Nx*Ny specifying max. firing rate in the place
+                    field.
+        widths   An array of widths of place fields (they are circular)
+        random   Uniform, but from a random distribution?
+        '''
+        self.boxSize = boxSize
+
+        if (boxSize[0] <= 0 or boxSize[1] <= 0):
+            raise Exception('boxSize dimenstions must be positive!')
+
+        # Uniform box outline
+        cx_top    = np.linspace(-self.boxSize[0]/2.0, self.boxSize[0]/2.0, N[0])
+        cx_right  = np.linspace( self.boxSize[1]/2.0, self.boxSize[1]/2.0, N[1])		
+        cx_bottom = np.linspace( self.boxSize[0]/2.0,-self.boxSize[0]/2.0, N[0])
+        cx_left   = np.linspace(-self.boxSize[1]/2.0,-self.boxSize[1]/2.0, N[1])
+        ctr_x     = np.hstack((cx_top, cx_right[range(1,N[1]-1)], 
+                                    cx_bottom, cx_left[range(1,N[1]-1)]))
+        
+        cy_top    = np.linspace( self.boxSize[0]/2.0, self.boxSize[0]/2.0, N[0])
+        cy_right  = np.linspace( self.boxSize[1]/2.0,-self.boxSize[1]/2.0, N[1])		
+        cy_bottom = np.linspace(-self.boxSize[0]/2.0,-self.boxSize[0]/2.0, N[0])
+        cy_left   = np.linspace(-self.boxSize[1]/2.0, self.boxSize[1]/2.0, N[1])
+        ctr_y     = np.hstack((cy_top, cy_right[range(1,N[1]-1)], 
+                                    cy_bottom, cy_left[range(1,N[1]-1)]))
+        
+        self.centers = np.vstack((ctr_x, ctr_y)).T
 
 
 if __name__ == '__main__':

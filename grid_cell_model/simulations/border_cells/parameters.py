@@ -118,7 +118,8 @@ class ParameterSelector(object):
         '''Velocity input parameters.'''
         self.parser.add_argument("--Ivel",             type=float,  help="Velocity input (In constant velocity currents, pA)")
         self.parser.add_argument("--bumpCurrentSlope", type=float,  help="Slope of the bump-current linear relationsip (starts at zero, pA/(cm/s)")
-        self.parser.add_argument("--ratVelFName",      type=str,    help="Positional input file name (matlab)")
+        self.parser.add_argument("--ratVelFName",      type=str,    help="Positional input file name (matlab)")		
+        self.parser.add_argument("--bc_connection_weights",      type=str,    help="Positional input file name (matlab)")
 
     def place_cells(self):
         '''Place cell parameters.'''
@@ -128,6 +129,7 @@ class ParameterSelector(object):
         self.parser.add_argument("--pc_conn_weight",       type=float,  help="Connection weight from each place to grid cells (nS)")
         self.parser.add_argument("--pc_start_max_rate",    type=float,  help="Init place cell maximal firing rate (Hz)")
         self.parser.add_argument("--pc_start_conn_weight", type=float,  help="Connection weight from each initialisation place cell to grid cells (nS)")
+        self.parser.add_argument("--pc_distribution",      type=str,    help="Determines the way place cell centres are distributed in terms of the arena")
 
     def i_place_cells(self):
         '''Parameters for place celss connected to I cells.'''

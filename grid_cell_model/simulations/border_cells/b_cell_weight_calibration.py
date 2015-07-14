@@ -21,18 +21,17 @@ data = h5py.File(path +'/' + noise + '/job00000_output.h5','r')
 
 # ****************** load simulation data *************************************************
 print("Loading simulation data...")
-import pdb; pdb.set_trace()
 # grid cell spikes
 e_senders = np.array(data['trials'][str(trial_no)]['spikeMon_e']['events']['senders'], dtype=np.int32)
 e_times = np.array(data['trials'][str(trial_no)]['spikeMon_e']['events']['times'], dtype=np.float32)
 # border cell spikes
-b_senders = np.array(data['trials'][str(trial_no)]['spikeMon_b']['events']['senders'], dtype=np.int32)
-b_times = np.array(data['trials'][str(trial_no)]['spikeMon_b']['events']['times'], dtype=np.float32)
+#b_senders = np.array(data['trials'][str(trial_no)]['spikeMon_b']['events']['senders'], dtype=np.int32)
+#b_times = np.array(data['trials'][str(trial_no)]['spikeMon_b']['events']['times'], dtype=np.float32)
 # grid cell population size
 N_e = len(data['trials'][str(trial_no)]['net_attr']['E_pop'])
 # border cell population size
 #N_b = len(data['trials'][str(trial_no)]['net_attr']['border_cells'])
-N_b = max(b_senders)+1
+#N_b = max(b_senders)+1
 # time step
 dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
 #simulation time
@@ -46,14 +45,14 @@ winLen = 1.0
 # estimate firing rates for both populations
 print("Estimating firing rate (sliding window method)...")
 e_spikes = e_senders, e_times
-b_spikes = b_senders, b_times
+#b_spikes = b_senders, b_times
 e_firing_rates, _ = slidingFiringRateTuple(e_spikes, N_e, tstart, tend, dt, winLen, True)
-b_firing_rates, _ = slidingFiringRateTuple(b_spikes, N_b, tstart, tend, dt, winLen, True)
-
+#b_firing_rates, _ = slidingFiringRateTuple(b_spikes, N_b, tstart, tend, dt, winLen, True)
 
 # calculate weight matrix (row are b cells, columns are e cells)
 print("Calculating weight matix...")
-W = b_firing_rates.dot(e_firing_rates.transpose())
+#W = b_firing_rates.dot(e_firing_rates.transpose())
+W = e_firing_rates.sum(1)
 
 # also get spike counts for each grid cell for information purposes
 spike_counts_e = scipy.stats.itemfreq(e_senders)
@@ -67,9 +66,7 @@ for i in range(W.shape[0]):
 # save params to matlab file
 scipy.io.savemat(path +'/' + noise + '/bc_Weights_trial' + str(trial_no)  + '.mat', 
                              mdict={'WeightMatrix': W, 
-                                  'spike_counts_e':spike_counts_e, 
-                                     'binSpikes_x':binSpikes_x, 
-                                     'binSpikes_y':binSpikes_y})
+                                  'spike_counts_e':spike_counts_e})
 
 # close data file
 data.close()

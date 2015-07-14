@@ -11,7 +11,7 @@ import nest
 from . import gc_neurons
 from .gc_net import GridCellNetwork
 from .place_input import PlaceCellInput
-from .place_cells import UniformBoxPlaceCells
+from .place_cells import UniformBoxPlaceCells, BoxOutlinePlaceCells
 from ..data_storage import DataStorage
 from ..analysis.geometry import (scaleLine, Position2D,
                                 bounding_box_dimensions)
@@ -506,14 +506,15 @@ class NestGridCellNetwork(GridCellNetwork):
 
         if end_t is None:
             end_t = self.no.time
-
         self.rat_dt = 20.0  # ms
         nVel = int((end_t - start_t) / self.rat_dt)
         self.rat_pos_x = np.cumsum(np.array([vel[0]] * nVel)) * (self.rat_dt *
                                                                  1e-3)
         self.rat_pos_y = np.cumsum(np.array([vel[1]] * nVel)) * (self.rat_dt *
                                                                  1e-3)
-
+        if startPos != None:
+            self.rat_pos_x = self.rat_pos_x + startPos[0]
+            self.rat_pos_y = self.rat_pos_y + startPos[1]
         # Force these velocities, not the animal velocitites
         self._ratVelocitiesLoaded = True
 
@@ -539,7 +540,7 @@ class NestGridCellNetwork(GridCellNetwork):
         if startPos == None:
             self.setStartPlaceCells(PosInputs([0.], [.0], self.rat_dt))
         else:
-            self.setStartPlaceCells(startPos)
+            self.setStartPlaceCells(PosInputs([startPos[0]],[startPos[1]],self.rat_dt))
 
         self.velocityInputInitialized = True
 
@@ -562,7 +563,8 @@ class NestGridCellNetwork(GridCellNetwork):
             gcnLogger.info('Initialization place cells already set. Skipping '
                            'the set up')
 
-    def setPlaceCells(self, start=None, end=None, posIn=None):
+    def setPlaceCells(self, start=None, end=None, posIn=None, 
+                                        distribution='uniform', boxSize=None):
         '''Place cells to initialize the bump.
 
         It should be initialized onto the correct position, i.e. the bump must
@@ -584,10 +586,12 @@ class NestGridCellNetwork(GridCellNetwork):
         self.PC, _, _ = self.createGenericPlaceCells(self.no.N_place_cells,
                                                      self.no.pc_max_rate,
                                                      self.no.pc_conn_weight,
-                                                     start, end, posIn)
+                                                     start, end, posIn, 
+                                                     distribution=distribution, 
+                                                     boxSize=boxSize)
 
     def createGenericPlaceCells(self, N, maxRate, weight, start=None, end=None,
-                                posIn=None):
+                                posIn=None, distribution='uniform', boxSize=None):
         '''
         Generate place cells and connect them to grid cells. The wiring is
         fixed, and there is no plasticity. This method can be used more than
@@ -603,11 +607,15 @@ class NestGridCellNetwork(GridCellNetwork):
 
         if N != 0:
             gcnLogger.info('Setting up generic place cells')
-            NTotal = N * N
-
-            boxSize = [self.no.arenaSize, self.no.arenaSize]
-            PCHelper = UniformBoxPlaceCells(boxSize, (N, N), maxRate,
-                                            self.no.pc_field_std, random=False)
+            if boxSize==None:
+                boxSize = [self.no.arenaSize, self.no.arenaSize]
+            if distribution == 'uniform':
+                PCHelper = UniformBoxPlaceCells(boxSize, (N, N), maxRate,
+                                        self.no.pc_field_std, random=False)
+            if distribution == 'box_outline':
+                PCHelper = BoxOutlinePlaceCells(boxSize, (N, N), maxRate,
+                                        self.no.pc_field_std)
+            NTotal = PCHelper.centers.shape[0]
 
             PC = nest.Create('place_cell_generator', NTotal,
                              params={'rate'      : maxRate,
@@ -775,7 +783,8 @@ class NestGridCellNetwork(GridCellNetwork):
                 b_ends = [(max_x,max_y),(max_x,min_y),(min_x,min_y),(min_x,max_y)]
                 borders = zip(b_starts,b_ends)
 
-        if posIn is None:        
+        if posIn is None:
+            self._loadRatVelocities()   
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
     
         self.border_cells, _ = self._create_generic_border_cells(borders, N_per_border,
@@ -834,6 +843,40 @@ class NestGridCellNetwork(GridCellNetwork):
 
         return border_cells, spikeMon_b
 
+    def connect_border_cells_predefined_weights(self, max_conn_weight=None):	
+        ''' 
+        connect border cells to the grid cell population using the predefined matrix
+        of connection weights in default_params
+        '''
+        g_cell_count = len(self.E_pop)
+        b_cell_count = len(self.border_cells)
+        bcNum = self.no.bcNum
+        if max_conn_weight == None: max_conn_weight = self.no.bc_conn_weight 
+        
+        #load connection weights
+        logger.info('Loading border cell connection weights')
+
+        conn_weights    = loadmat(self.no.bc_connection_weights)
+
+        # connect border cells
+        print("Connecting border cells to E_pop using predefined weights...")
+        print("E_pop =", g_cell_count, " cells in total." ),
+        bc_weight_threshold = 0.1
+        #import pdb; pdb.set_trace()
+        for i in xrange(b_cell_count/bcNum):
+            w = conn_weights['border'+str(i)+'_weights']
+            #gt_th = w > bc_weight_threshold
+            post = np.extract(w > bc_weight_threshold, self.E_pop)
+            #post = np.array(self.E_pop)[gt_th]
+            #w    = w[gt_th]
+            w = np.extract(w > bc_weight_threshold, w)
+            nest.DivergentConnect(
+                self.border_cells[i*bcNum:(i+1)*bcNum],
+                list(post),
+                weight=list(w * max_conn_weight),
+                delay=[self.no.delay] * len(w),
+                model='PC_AMPA')
+
     def connect_border_cells_modified_place_cell_method(self, conn_weight=None):	
         ''' 
         connect border cells to the grid cell population using a modification
@@ -887,61 +930,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 delay=[self.no.delay] * len(w),
                 model='PC_AMPA')
 
-    def connect_border_cells_line_method(self, conn_weight=None):	
-        ''' 
-        connect border cells to the grid cell population
-        by projecting a "line" on the neural sheet corresponding to the
-        actual border in the arena
-        '''
-        g_cell_count = len(self.E_pop)
-        b_cell_count = len(self.border_cells)
-
-        if conn_weight == None: conn_weight = self.no.bc_conn_weight        
-
-        # get arena borders 
-        b_starts_x = nest.GetStatus(self.border_cells,"border_start_x")  
-        b_starts_y = nest.GetStatus(self.border_cells,"border_start_y")  
-        b_ends_x = nest.GetStatus(self.border_cells,"border_end_x")  
-        b_ends_y = nest.GetStatus(self.border_cells,"border_end_y")
-        b_starts = [Position2D(p[0],p[1]) for p in zip(b_starts_x, b_starts_y)]
-        b_ends = [Position2D(p[0],p[1]) for p in zip(b_ends_x, b_ends_y)]
-        borders = zip(b_starts, b_ends)
-        
-        # get arena dimensions (assumed square)
-        arenaDim = bounding_box_dimensions(borders)
-
-        # get network dimensions
-        networkDim = 1.0, self.y_dim
-
-        # get lines in network that approximately correspond to arena borders
-        # and normalise to <0, sqrt(3)/2>
-        lines = [scaleLine(border, arenaDim, networkDim) for border in borders]
-        x_min = min(min([l[0].x for l in lines]), min([l[1].x for l in lines]))
-        y_min = min(min([l[0].y for l in lines]), min([l[1].y for l in lines]))		
-        lines = [(Position2D(l[0].x-x_min,l[0].y-y_min), Position2D(l[1].x-x_min,l[1].y-y_min)) for l in lines]
-
-        # calculate weights for each border cell / arena border
-        print("Calculating border cells to E_pop connection weights...")
-        print("E_pop =", g_cell_count, " cells in total." ),
-        W = []
-        # how divergent the connections are, 3sigma rule --> division by 6.
-        connStdDev = 0.05 # self.no.gridSep / 2. / 6. 
-        for i in range(b_cell_count):	#for each network line            
-            print("Border cell ", i, " of ", b_cell_count-1, "...")
-            #import pdb; pdb.set_trace()
-            w = self._generateGaussianBorderWeights(lines[i], self.E_pop, connStdDev)
-            W.append(w)
-
-        # connect border cells to grid cells
-        for i in range(b_cell_count):
-            print("Connecting border cell: ", i, " of ", b_cell_count-1, "...")
-            
-            nest.DivergentConnect(  [self.border_cells[i]], 
-                                    self.E_pop, 
-                                    list(W[i] * conn_weight), 
-                                    delay=self.no.delay, 
-                                    model='PC_AMPA')
-
+ 
     ###########################################################################
     #                                   Other
     ###########################################################################
@@ -1226,7 +1215,7 @@ class ConstantVelocityNetwork(BasicGridCellNetwork):
                                       stateRecord_type,
                                       stateRecParams)
 
-        self.setConstantVelocityCurrent_e(vel)
+        self.setConstantVelocityCurrent_e(vel,startPos=startPos)
 
     def getSpikes(self, **kw):
         '''
