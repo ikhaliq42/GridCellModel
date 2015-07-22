@@ -31,7 +31,7 @@ conns = conns.transpose()
 # arrange data in to a dictionary
 connections = {}
 for i in range(len(conns)):
-    connections[type + str(i)] = conns[i].reshape(30,34)
+    connections[type + str(i)] = conns[i] #.reshape(30,34)
 
 #save to matlab file
 scipy.io.savemat(path +'/' + noise + '/ConnMatrix_trial_' + str(trial_no) + '.mat', mdict=connections)

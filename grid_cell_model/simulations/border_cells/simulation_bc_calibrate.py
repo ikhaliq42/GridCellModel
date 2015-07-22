@@ -13,8 +13,8 @@ from grid_cell_model.models.seeds import TrialSeedGenerator
 from grid_cell_model.data_storage import DataStorage
 
 parser = getOptParser()
-parser.add_argument("--pcON", type=int, choices=[0, 1], default=1, help="Place cell input ON?")
-parser.add_argument("--bcON", type=int, choices=[0, 1], default=1, help="Border cell input ON?")
+parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
+parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 (o, args) = parser.parse_args()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
@@ -23,10 +23,10 @@ d = DataStorage.open(output_fname, 'w')
 d['trials'] = []
 
 #create borders
-startPos_x = [-80.0, 80.0, 80.0,-80.0]
-startPos_y = [ 80.0, 80.0,-80.0,-80.0]
-endPos_x   = [ 80.0, 80.0,-80.0,-80.0]
-endPos_y   = [ 80.0,-80.0,-80.0, 80.0]
+startPos_x = [-90.0, 90.0, 90.0,-90.0]
+startPos_y = [ 90.0, 90.0,-90.0,-90.0]
+endPos_x   = [ 90.0, 90.0,-90.0,-90.0]
+endPos_y   = [ 90.0,-90.0,-90.0, 90.0]
 borders = zip(zip(startPos_x,startPos_y),zip(endPos_x,endPos_y))
 
 #velocities
@@ -40,7 +40,6 @@ for trial_idx in range(o.ntrials):
     seed_gen.set_generators(trial_idx)  # Each trial is reproducible
     d['master_seed'] = int(o.master_seed)
     d['invalidated'] = 1
-
     const_v = velocities[trial_idx]
     startPos = borders[trial_idx][0]
     ei_net = ConstantVelocityNetwork(o, simulationOpts=None, vel=const_v, startPos=startPos)
@@ -48,7 +47,6 @@ for trial_idx in range(o.ntrials):
 
     # create border cell (unconnected)
     ei_net.create_border_cells(borders, N_per_border=1)
-
     try:
         ei_net.simulate(o.time, printTime=o.printTime)
     except NESTError as e:

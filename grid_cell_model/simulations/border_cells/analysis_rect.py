@@ -5,6 +5,7 @@ import numpy as np
 import math
 import sys
 import argparse
+import os.path
 
 from matplotlib.pyplot import (figure, plot, pcolormesh, subplot2grid, savefig,
         colorbar, axis, xlabel, ylabel)
@@ -18,6 +19,7 @@ parser.add_argument("--spike_mon_type", type=str, default='spikeMon_e')
 parser.add_argument("--neuron_idx", type=int, help="Index of neuron to analyse, default = 0", default=0)
 parser.add_argument("--trial_no", type=int, help="Trial number, default = 0", default=0)
 parser.add_argument("--recalc", type=bool, help="Force recals, default = 0", default=0)
+parser.add_argument("--replot", type=bool, help="Force re-plot, default = 0", default=0)
 parser.add_argument("--noise", type=str, help="Noise sigma of simulation", default='150pA')
 args = parser.parse_args()
 
@@ -31,6 +33,7 @@ sim_name = args.sim_name
 minGridnessT = 0.0
 args = parser.parse_args()
 recalc = args.recalc
+replot = args.replot
 # open data file
 assert not (args.sim_name == "") 
 data = h5py.File(args.sim_name + '/' + noise + '/job00000_output.h5', 'r+')
@@ -70,7 +73,7 @@ if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
     data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X', data=X)
     data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y', data=Y)
 else:
-    print("\nRate map already exists - loading.")
+    print("\nRate map already exists - loading. (Use--recalc=1 to overwrite.)")
     rateMap = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap'))
     X = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X'))
     Y = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y'))
@@ -90,16 +93,19 @@ if lastSpikeT >= minGridnessT:
 else:
     print "Simulation too short, Gridness score NaN"
 
-
 # Draw ratemap plots
-print("\nCreating plot...") 
-figure()
-pcolormesh(X, Y, rateMap)
-colorbar()
-axis('equal')
-axis('off')
-print("Saving plot")
-savefig('{0}trial_{1}_rateMap_{2}_{3}.png'.format(sim_name+'/'+noise+'/',str(trial_no) ,spike_mon_type, neuron_idx))
+path = '{0}trial_{1}_rateMap_{2}_{3}.png'.format(sim_name+'/'+noise+'/',str(trial_no) ,spike_mon_type, neuron_idx)
+if not os.path.exists(path) or replot==1:
+    print("\nCreating plot...") 
+    figure()
+    pcolormesh(X, Y, rateMap)
+    colorbar()
+    axis('equal')
+    axis('off')
+    print("Saving plot")
+    savefig(path)
+else:
+	print("\nFigure already exists; use --replot=1 to overwrite.")
 
 
 

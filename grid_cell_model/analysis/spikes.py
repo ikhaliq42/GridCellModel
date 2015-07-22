@@ -92,8 +92,7 @@ __all__ = [
 #    #lg.debug('End firing rate processing')
 #    return (r/winLen, times)
 
-
-def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen, return_sparse=False):
+def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen, winStep = None, return_sparse=False):
     '''
     Compute a firing rate with a sliding window from a tuple of spike data:
     spikes is a tuple(n_id, times), in which n_id is a list/array of neuron id
@@ -107,24 +106,30 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen, return_sparse=Fa
     tend    End time of firing rate (ms)
     dt      Sliding window dt - not related to simulation time (ms)
     winLen  Length of the sliding window (ms). Must be >= dt.
+    winStep Number of milliseconds to shift sliding window in each iteration
 
     return  An array of shape (N, int((tend-tstart)/dt)+1
     '''
+
+    if winStep == None: winStep = dt
+    dtWinStep   = int(winStep/dt)
+
     tstart = float(tstart)
     tend   = float(tend)
     dt     = float(dt)
     winLen = float(winLen)
 
-    szRate      = int((tend-tstart)/dt)+1
+    szBitSpikes = int((tend-tstart)/dt)+1
+    szRate      = int((tend-tstart)/winStep)+1
     n_ids       = np.array(spikes[0])
     spikeTimes  = np.array(spikes[1])
     lenSpikes   = len(spikeTimes)
-    bitSpikes   = np.zeros((N, szRate))
+    bitSpikes   = np.zeros((N, szBitSpikes))
     fr          = np.zeros((N, szRate))
     dtWlen      = int(winLen/dt)
     times       = np.linspace(tstart, tend, szRate)
     N           = int(N)
-
+    
     #print "max(n_ids): ", np.max(n_ids)
     #print 'szRate: ', szRate
     #print 'N: ', N
@@ -134,7 +139,7 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen, return_sparse=Fa
         for (int i = 0; i < lenSpikes; i++)
         {
             int spikeSteps = (spikeTimes(i) - tstart) / dt;
-            if (spikeSteps >= 0 && spikeSteps < szRate)
+            if (spikeSteps >= 0 && spikeSteps < szBitSpikes)
             {
                 int n_id = n_ids(i);
                 bitSpikes(n_id, spikeSteps) += 1;
@@ -143,52 +148,38 @@ def slidingFiringRateTuple(spikes, N, tstart, tend, dt, winLen, return_sparse=Fa
         
         for (int n_id = 0; n_id < N; n_id++)
         {
-            for (int t = 0; t < szRate; t++)
+            int tbin = 0;
+            for (int t = 0; t < szBitSpikes; t+=dtWinStep)
             {
-                fr(n_id, t) = .0;
-                for (int s = 0; s < dtWlen; s++)
-                    if((t+s) < szRate) {fr(n_id, t) += bitSpikes(n_id, t+s);}
+                if(tbin < szRate)
+                {
+                    fr(n_id, tbin) = .0;
+                    for (int s = 0; s < dtWlen; s++) 
+                    {
+                        if((t+s) < szBitSpikes) {fr(n_id, tbin) += bitSpikes(n_id, t+s);}
+                    }
+                }
+                tbin+=1;
             }
         }
         """
     ''
     err = weave.inline(code,
-            ['N', 'szRate', 'dtWlen', 'lenSpikes', 'n_ids', 'spikeTimes',
-                'tstart', 'dt', 'bitSpikes', 'fr'],
+            ['N', 'szRate','szBitSpikes' , 'dtWlen', 'lenSpikes', 'n_ids', 'spikeTimes',
+                'tstart', 'dt', 'bitSpikes', 'fr','dtWinStep'],
             type_converters=weave.converters.blitz,
             compiler='gcc',
             extra_compile_args=['-O3'],
             verbose=2)
-    
     ''
-    '''
-    #Python version of weave.inline code - for debugging only
-    for i in range(lenSpikes):
-        spikeSteps = (spikeTimes[i] - tstart) / dt
-        if (spikeSteps >= 0 and spikeSteps < szRate):
-            n_id = n_ids[i]
-            bitSpikes[n_id, spikeSteps] = bitSpikes[n_id, spikeSteps] + 1
-    
-    for n_id in range(N):
-        for t in range(szRate):
-            fr[n_id, t] = 0.0
-            for s in range(dtWlen):
-                if ((t+s) < szRate): 
-                    fr[n_id, t] = fr[n_id, t] + bitSpikes[n_id, t+s]
-    '''
 
     #print "End sliding firing rate"
-
     if return_sparse:
         fr_sparse = scipy.sparse.lil_matrix(fr)
         return (fr_sparse/(winLen*1e-3)), times
     else:
         return (fr/(winLen*1e-3)), times
     
-
-
-
-
 
 def torusPopulationVector(spikes, sheetSize, tstart=0, tend=-1, dt=0.02, winLen=1.0):
     '''
@@ -537,7 +528,7 @@ class TorusPopulationSpikes(PopulationSpikes):
         return (np.angle(P)/2/np.pi*self._sheetSize, tsteps)
 
 
-    def slidingFiringRate(self, tStart, tEnd, dt, winLen):
+    def slidingFiringRate(self, tStart, tEnd, dt, winLen, winStep=None):
         '''
         Compute a sliding firing rate over the population of spikes, by taking
         a rectangular window of specified length. However, unlike the ancestor
@@ -563,7 +554,7 @@ class TorusPopulationSpikes(PopulationSpikes):
         '''
         spikes = (self._senders, self._times)
         F, Ft = slidingFiringRateTuple(spikes, self._N, tStart, tEnd, dt,
-                winLen)
+                winLen, winStep)
         Nx = self.getXSize()
         Ny = self.getYSize()
         return np.reshape(F, (Ny, Nx, len(Ft))), Ft

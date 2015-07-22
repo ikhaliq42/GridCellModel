@@ -11,8 +11,8 @@ sim = DemoSimulation('simulation_bc_calibrate.py', sim_label, dp)
 parser = sim.parser
 parser.add_argument('--nthreads', type=int, default=1,
                     help='Number of simulation threads.')
-parser.add_argument("--pcON", type=int, choices=[0, 1], default=1, help="Place cell input ON?")
-parser.add_argument("--bcON", type=int, choices=[0, 1], default=1, help="Border cell input ON?")
+parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place cell input ON?")
+parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 #parser.add_argument("--bcNum", type=int, default=1, help="Number of border cells per border")
 #parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=1, help="Get connection matrices?")
 #parser.add_argument("--bcConnMethod", type=str, default="none", help="Border cell connect method; default = none")

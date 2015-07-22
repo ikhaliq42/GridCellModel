@@ -54,7 +54,6 @@ for trial_idx in range(o.ntrials):
     if o.pcON:
         # activate place cells (including start place cells))
         ei_net.setPlaceCells()
-        
     # start place cells
     if o.spcON:
         # activate start place cells only

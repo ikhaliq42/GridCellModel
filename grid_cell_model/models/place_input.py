@@ -104,7 +104,6 @@ class PlaceCellInput(object):
         return self.arena[y-self.Ne_y/2:y+self.Ne_y/2, x-self.Ne_x/2:x+self.Ne_x/2]
 
 
-
 if __name__=="__main__":
     from matplotlib.pyplot import *
     Ne_x = 34

@@ -108,8 +108,14 @@ class UniformBoxPlaceCells(PlaceCells):
 
         if not random:
             # Uniform grid
-            cx           = np.linspace(-self.boxSize[0]/2.0, self.boxSize[0]/2.0, N[0])
-            cy           = np.linspace(-self.boxSize[1]/2.0, self.boxSize[1]/2.0, N[1])
+            if N[0] == 1:
+                cx			 = np.array([0.0])
+            else:
+                cx           = np.linspace(-self.boxSize[0]/2.0, self.boxSize[0]/2.0, N[0])
+            if N[1] == 1:
+                cy			 = np.array([0.0])
+            else:
+                cy           = np.linspace(-self.boxSize[1]/2.0, self.boxSize[1]/2.0, N[1])
             ctr_x, ctr_y = np.meshgrid(cx, cy)
             centers = np.vstack((ctr_x.flatten(), ctr_y.flatten())).T
         else:

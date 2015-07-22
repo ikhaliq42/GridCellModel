@@ -31,10 +31,10 @@ d = DataStorage.open(output_fname, 'w')
 d['trials'] = []
 
 #create borders
-startPos_x = [-80.0, 80.0, 80.0,-80.0]
-startPos_y = [ 80.0, 80.0,-80.0,-80.0]
-endPos_x   = [ 80.0, 80.0,-80.0,-80.0]
-endPos_y   = [ 80.0,-80.0,-80.0, 80.0]
+startPos_x = [-90.0, 90.0, 90.0,-90.0]
+startPos_y = [ 90.0, 90.0,-90.0,-90.0]
+endPos_x   = [ 90.0, 90.0,-90.0,-90.0]
+endPos_y   = [ 90.0,-90.0,-90.0, 90.0]
 borders = zip(zip(startPos_x,startPos_y),zip(endPos_x,endPos_y))
 border_dim = max(startPos_x) - min(startPos_x) , max(startPos_y) - min(startPos_y)
 

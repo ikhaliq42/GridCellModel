@@ -53,7 +53,6 @@ e_firing_rates, _ = slidingFiringRateTuple(e_spikes, N_e, tstart, tend, dt, winL
 print("Calculating weight matix...")
 #W = b_firing_rates.dot(e_firing_rates.transpose())
 W = e_firing_rates.sum(1)
-
 # also get spike counts for each grid cell for information purposes
 spike_counts_e = scipy.stats.itemfreq(e_senders)
 
@@ -61,7 +60,7 @@ spike_counts_e = scipy.stats.itemfreq(e_senders)
 print("Normalising...")
 w_max = W.max()
 for i in range(W.shape[0]):    
-    if w_max != 0.0: W[i,:] = W[i,:] / w_max
+    if w_max != 0.0: W[i] = W[i] / w_max
 
 # save params to matlab file
 scipy.io.savemat(path +'/' + noise + '/bc_Weights_trial' + str(trial_no)  + '.mat', 

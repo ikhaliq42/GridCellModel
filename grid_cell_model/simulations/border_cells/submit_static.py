@@ -18,8 +18,8 @@ parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place c
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border cell input ON?")
 parser.add_argument("--spcON", type=int, choices=[0, 1], default=0, help="Start cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
-parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
-parser.add_argument("--bcConnMethod", type=str, default="predef", help="Border cell connect method; default = predef")
+parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=1, help="Get connection matrices?")
+parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = predef")
 o = parser.parse_args()
 
 p = {}
@@ -37,6 +37,7 @@ p['getConnMatrices']        = o.getConnMatrices
 p['bcConnMethod']           = o.bcConnMethod
 p['bc_max_rate']            = 100.0
 p['bc_conn_weight']         = 5.0
+p['N_place_cells']          = 31
 
 sim.update_user_parameters(p)
 sim.run()

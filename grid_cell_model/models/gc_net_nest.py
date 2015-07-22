@@ -766,7 +766,7 @@ class NestGridCellNetwork(GridCellNetwork):
                     print("Target not in I_pop!")
         return W
 
-    def create_border_cells(self, borders=None, N_per_border=1, posIn=None):
+    def create_border_cells(self, borders=None, N_per_border=1, posIn=None, start=None, end=None):
 
         if borders==None:
             self._loadRatVelocities()
@@ -788,7 +788,7 @@ class NestGridCellNetwork(GridCellNetwork):
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
     
         self.border_cells, _ = self._create_generic_border_cells(borders, N_per_border,
-                                self.no.bc_max_rate, self.no.bc_field_std, posIn)
+                            self.no.bc_max_rate, self.no.bc_field_std, posIn, start, end)
         
     def _create_generic_border_cells(self, borders, N_per_border, maxRate, fieldStdDev, 
                                                 posIn, start=None, end=None):
@@ -902,7 +902,7 @@ class NestGridCellNetwork(GridCellNetwork):
         
         # how divergent the connections are, 3sigma rule --> division by 6.
         connStdDev          = self.no.gridSep / 2. / 6.
-        Sigma_vert  = np.array([[connStdDev ** 2, 0.0],[0.0,             1e7]])
+        Sigma_vert  = np.array([[connStdDev ** 2, 0.0],[0.0, 1e7            ]])
         Sigma_horiz = np.array([[1e7            , 0.0],[0.0, connStdDev ** 2]])
         bc_weight_threshold = 0.1
 
@@ -1183,7 +1183,7 @@ class BasicGridCellNetwork(NestGridCellNetwork):
         #d['I->E'] = self.getConnMatrix('I')
         #d['E->I'] = self.getConnMatrix('E')
         if self.border_cells != []: d['B->E'] = self.getConnMatrix('B')
-        #if self.PC           != []: d['P->E'] = self.getConnMatrix('P')
+        if self.PC           != []: d['P->E'] = self.getConnMatrix('P')
         
         return d
 

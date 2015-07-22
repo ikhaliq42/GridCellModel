@@ -340,9 +340,9 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         super(SingleBumpPopulation, self).__init__(senders, times, sheet_size)
 
     def _perform_fit(self, tstart, tend, dt, win_len, fit_callable, list_cls,
-                     full_err=True):
+                     full_err=True, winStep = None): 
         '''Perform the fit given the requested ``fit_callable``.'''
-        F, Ft = self.slidingFiringRate(tstart, tend, dt, win_len)
+        F, Ft = self.slidingFiringRate(tstart, tend, dt, win_len, winStep)
         res = list_cls()
         for tIdx in range(len(Ft)):
             LOGGER.debug('%s:: fitting: %d/%d, %.3f/%.3f ',
@@ -356,7 +356,7 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
             res.append_data(fit_params, Ft[tIdx])
         return res
 
-    def bump_position(self, tstart, tend, dt, win_len, full_err=True):
+    def bump_position(self, tstart, tend, dt, win_len, full_err=True, winStep=None):
         '''Estimate bump positions during the simulation time:
 
         1. Estimates population firing rate for each bin.
@@ -384,7 +384,7 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         '''		
         return self._perform_fit(tstart, tend, dt, win_len,
                                  fit_gaussian_bump_tt, MLGaussianFitList,
-                                 full_err=full_err)
+                                 full_err=full_err, winStep=winStep)
 
     def uniform_fit(self, tstart, tend, dt, win_len, full_err=True):
         '''Estimate the mean firing rate using maximum likelihood estimator
