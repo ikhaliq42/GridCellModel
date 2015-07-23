@@ -855,7 +855,7 @@ class NestGridCellNetwork(GridCellNetwork):
         
         #load connection weights
         logger.info('Loading border cell connection weights')
-
+        
         conn_weights    = loadmat(self.no.bc_connection_weights)
 
         # connect border cells

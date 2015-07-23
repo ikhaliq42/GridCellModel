@@ -22,7 +22,7 @@ import numpy as np
 
 from scipy.io import loadmat
 from scipy import linalg
-
+from scipy.stats import multivariate_normal
 
 class PlaceCellInput(object):
     '''
@@ -66,16 +66,20 @@ class PlaceCellInput(object):
         X = 1. * (X - arenaSize)
         Y = 1. * (Y - arenaSize)
         
+        # original formulae were non-normalised, so need to multiply this back out
+        normalization = np.sqrt((2 * np.pi) ** 2 * linalg.det(self.Sigma))
+        
         X_mod = np.abs(np.mod(X - self.gridsep_x/2 - gridCenter[0], self.gridsep_x) - self.gridsep_x/2)
         Y_mod = np.abs(np.mod(Y - self.gridsep_y/2 - gridCenter[1], self.gridsep_y) - self.gridsep_y/2)
         #arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)		
-        inv_Sig = linalg.inv(self.Sigma)
+        #inv_Sig = linalg.inv(self.Sigma)
         arena1 = np.zeros(X_mod.shape)
         for i in range(X_mod.shape[0]):
             for j in range(X_mod.shape[1]):
                 xy_mod = np.array([X_mod[i,j], Y_mod[i,j]])
-                a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
-                arena1[i,j] = np.exp(-a)
+                #a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
+                #arena1[i,j] = np.exp(-a)
+                arena1[i,j] = multivariate_normal.pdf(xy_mod, mean=np.array([0.0, 0.0]), cov=self.Sigma) * normalization
         
         shift_x = self.gridsep_x*np.cos(np.pi/3)
         shift_y = self.gridsep_x*np.sin(np.pi/3)
@@ -84,8 +88,9 @@ class PlaceCellInput(object):
         for i in range(X_mod.shape[0]):
             for j in range(X_mod.shape[1]):
                 xy_mod = np.array([X_mod[i,j] - shift_x, Y_mod[i,j] - shift_y])
-                a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
-                arena2[i,j] = np.exp(-a)
+                #a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
+                #arena2[i,j] = np.exp(-a)
+                arena2[i,j] = multivariate_normal.pdf(xy_mod, mean=np.array([0.0, 0.0]), cov=self.Sigma) * normalization
         
         self.arena = arena1 + arena2
         self.arena = self.arena / np.max(self.arena)

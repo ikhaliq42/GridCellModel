@@ -90,6 +90,8 @@ for trial_idx in range(o.ntrials):
             ei_net.connect_border_cells_line_method(o.bc_conn_weight)
         elif o.bcConnMethod == "place":
             ei_net.connect_border_cells_modified_place_cell_method(o.bc_conn_weight)
+        elif o.bcConnMethod == "predef":
+            ei_net.connect_border_cells_predefined_weights(o.bc_conn_weight)
         elif o.bcConnMethod == "none":
             pass
 

@@ -35,7 +35,7 @@ defaultParameters = {
         "printTime"             :   0,            # This is boolean
 
         "ratVelFName"           : '../../../data/Sargolini_2006_scaled_180.mat',
-        "bc_connection_weights" : '../../../data/border_weights_10cm_margin.mat',
+        "bc_connection_weights" : '../../../data/border_weights_vert_truncated.mat',
 
         "gridSep"               :   60,           # cm
 
