@@ -71,14 +71,11 @@ class PlaceCellInput(object):
         
         X_mod = np.abs(np.mod(X - self.gridsep_x/2 - gridCenter[0], self.gridsep_x) - self.gridsep_x/2)
         Y_mod = np.abs(np.mod(Y - self.gridsep_y/2 - gridCenter[1], self.gridsep_y) - self.gridsep_y/2)
-        #arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)		
-        #inv_Sig = linalg.inv(self.Sigma)
+        #arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)	
         arena1 = np.zeros(X_mod.shape)
         for i in range(X_mod.shape[0]):
             for j in range(X_mod.shape[1]):
                 xy_mod = np.array([X_mod[i,j], Y_mod[i,j]])
-                #a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
-                #arena1[i,j] = np.exp(-a)
                 arena1[i,j] = multivariate_normal.pdf(xy_mod, mean=np.array([0.0, 0.0]), cov=self.Sigma) * normalization
         
         shift_x = self.gridsep_x*np.cos(np.pi/3)
@@ -88,8 +85,6 @@ class PlaceCellInput(object):
         for i in range(X_mod.shape[0]):
             for j in range(X_mod.shape[1]):
                 xy_mod = np.array([X_mod[i,j] - shift_x, Y_mod[i,j] - shift_y])
-                #a = (xy_mod.dot(inv_Sig)).dot(xy_mod) / 2
-                #arena2[i,j] = np.exp(-a)
                 arena2[i,j] = multivariate_normal.pdf(xy_mod, mean=np.array([0.0, 0.0]), cov=self.Sigma) * normalization
         
         self.arena = arena1 + arena2
@@ -107,6 +102,36 @@ class PlaceCellInput(object):
         y = (pos_y - self.arenaSize)/self.dx
 
         return self.arena[y-self.Ne_y/2:y+self.Ne_y/2, x-self.Ne_x/2:x+self.Ne_x/2]
+        
+    def getSheetInputTruncated(self, pos_x, pos_y, side):
+        '''
+        Variation of getSheetInput. Inputs are truncated in a particular direction
+        Currently only implements: 'E' and 'W'
+        '''
+        x = (pos_x - self.arenaSize)/self.dx
+        y = (pos_y - self.arenaSize)/self.dx
+        inputs = self.arena[y-self.Ne_y/2:y+self.Ne_y/2, x-self.Ne_x/2:x+self.Ne_x/2]
+        truncated_inputs = np.zeros((inputs.shape[0],inputs.shape[1]))
+        
+        if side == 'W':
+            for x in range(inputs.shape[0]):
+                for y in range(inputs.shape[1]):
+                    y_next = y + 1 if y < inputs.shape[1] - 2 else 0
+                    if inputs[x,y] >= inputs[x,y_next]: 
+                        truncated_inputs[x,y] = 0.0
+                    else:
+                        truncated_inputs[x,y] = inputs[x,y]
+                        
+        if side == 'E':
+            for x in range(inputs.shape[0]):
+                for y in range(inputs.shape[1]):
+                    y_next = y + 1 if y < inputs.shape[1] - 2 else 0
+                    if inputs[x,y] < inputs[x,y_next]: 
+                        truncated_inputs[x,y] = 0.0
+                    else:
+                        truncated_inputs[x,y] = inputs[x,y]
+
+        return truncated_inputs
 
 
 if __name__=="__main__":
@@ -117,10 +142,10 @@ if __name__=="__main__":
     gridsep = 70            # cm
     gridCenter = [0, 0]
     pc = PlaceCellInput(Ne_x, Ne_y, arenaSize, gridsep, gridCenter)
-    pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
-    pcolormesh(pc.arena); axis('equal'); show()
-    pcolormesh(pc.getSheetInput(.0, .0)); show()
-    
+    #pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
+    #pcolormesh(pc.arena); axis('equal'); show()
+    #pcolormesh(pc.getSheetInput(.0, .0)); show()
+    pcolormesh(pc.getSheetInputTruncated(.0, .0, 'E')); show()
     
     vel_fname = '../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
     ratData = loadmat(vel_fname)

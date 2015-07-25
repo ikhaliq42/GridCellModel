@@ -877,7 +877,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 delay=[self.no.delay] * len(w),
                 model='PC_AMPA')
 
-    def connect_border_cells_modified_place_cell_method(self, conn_weight=None):	
+    def connect_border_cells_modified_place_cell_method(self, directions,conn_weight=None, connStdDev=None):	
         ''' 
         connect border cells to the grid cell population using a modification
         of the method used to connect the place cells. Here, the connection
@@ -890,6 +890,8 @@ class NestGridCellNetwork(GridCellNetwork):
         b_cell_count = len(self.border_cells)
         
         if conn_weight == None: conn_weight = self.no.bc_conn_weight 
+        if connStdDev  == None: connStdDev  = self.no.gridSep / 2. / 6. # how divergent the connections are,
+                                                                        # 3sigma rule --> division by 6.
 
         print("Calculating border cells to E_pop connection weights...")
         print("E_pop =", g_cell_count, " cells in total." ),
@@ -900,8 +902,7 @@ class NestGridCellNetwork(GridCellNetwork):
         b_ends_x = nest.GetStatus(self.border_cells,"border_end_x")  
         b_ends_y = nest.GetStatus(self.border_cells,"border_end_y")
         
-        # how divergent the connections are, 3sigma rule --> division by 6.
-        connStdDev          = self.no.gridSep / 2. / 6.
+        
         Sigma_vert  = np.array([[connStdDev ** 2, 0.0],[0.0, 1e7            ]])
         Sigma_horiz = np.array([[1e7            , 0.0],[0.0, connStdDev ** 2]])
         bc_weight_threshold = 0.1
@@ -914,12 +915,15 @@ class NestGridCellNetwork(GridCellNetwork):
             print("Border cell ", bc_id, " of ", b_cell_count-1, "...")
             ctr_x = (b_starts_x[bc_id] + b_ends_x[bc_id])/2
             ctr_y = (b_starts_y[bc_id] + b_ends_y[bc_id])/2
-            is_horizontal = b_starts_y[bc_id] == b_ends_y[bc_id]
-            is_vertical = b_starts_x[bc_id] == b_ends_x[bc_id]
-            if is_horizontal:
+            #is_horizontal = b_starts_y[bc_id] == b_ends_y[bc_id]
+            #is_vertical = b_starts_x[bc_id] == b_ends_x[bc_id]
+            drct = directions[int(bc_id / self.no.bcNum)]
+            if drct == 'N' or drct == 'S':
                 w = horiz_bc_input.getSheetInput(ctr_x, ctr_y).flatten()
-            else:
+            elif drct == 'E' or drct == 'W':
                 w = vert_bc_input.getSheetInput(ctr_x, ctr_y).flatten()
+            else:
+                raise ValueError("Directions must be N, E, S or W")				
             gt_th = w > bc_weight_threshold
             post = np.array(self.E_pop)[gt_th]
             w    = w[gt_th]

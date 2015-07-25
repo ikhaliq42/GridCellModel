@@ -19,6 +19,8 @@ parser.add_argument("--pcON", type=int, choices=[0, 1], default=1, help="Place c
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=1, help="Border cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
 parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = predef")
+parser.add_argument("--bcConnStd", type=float, required=False, help="Divergence of Border cell connection to E cells (does not apply to predef weights)")
+parser.add_argument("--bcMargin", type=float, required=False, help="Arena margin where border cells have maximum activtiy, default is zero")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 (o, args) = parser.parse_args()
 
@@ -28,10 +30,12 @@ d = DataStorage.open(output_fname, 'w')
 d['trials'] = []
 
 #create borders
-startPos_x = [-90.0, 90.0, 90.0,-90.0]
-startPos_y = [ 90.0, 90.0,-90.0,-90.0]
-endPos_x   = [ 90.0, 90.0,-90.0,-90.0]
-endPos_y   = [ 90.0,-90.0,-90.0, 90.0]
+mrg = o.bcMargin
+startPos_x = [-90.0+mrg, 90.0-mrg, 90.0-mrg,-90.0+mrg]
+startPos_y = [ 90.0-mrg, 90.0-mrg,-90.0+mrg,-90.0+mrg]
+endPos_x   = [ 90.0-mrg, 90.0-mrg,-90.0+mrg,-90.0+mrg]
+endPos_y   = [ 90.0-mrg,-90.0+mrg,-90.0+mrg, 90.0-mrg]
+directions = ['N','E','S','W']
 arena_borders = zip(zip(startPos_x,startPos_y),zip(endPos_x,endPos_y))
 
 overalT = 0.
@@ -66,10 +70,8 @@ for trial_idx in range(o.ntrials):
         # create the border cells
         ei_net.create_border_cells(borders=arena_borders, N_per_border=o.bcNum)
         # connect border cells according to chosen method
-        if o.bcConnMethod == "line":
-            ei_net.connect_border_cells_line_method(o.bc_conn_weight)
-        elif o.bcConnMethod == "place":
-            ei_net.connect_border_cells_modified_place_cell_method(o.bc_conn_weight)
+        if o.bcConnMethod == "place":
+            ei_net.connect_border_cells_modified_place_cell_method(directions, o.bc_conn_weight, o.bcConnStd)
         elif o.bcConnMethod == "predef":
             ei_net.connect_border_cells_predefined_weights(o.bc_conn_weight)
         elif o.bcConnMethod == "none":

@@ -20,7 +20,8 @@ parser.add_argument("--pcON", type=int, choices=[0, 1], default=0, help="Place c
 parser.add_argument("--spcON", type=int, choices=[0, 1], default=1, help="Start cell input ON?")
 parser.add_argument("--bcON", type=int, choices=[0, 1], default=1, help="Border cell input ON?")
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
-parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = line")
+parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = place")
+parser.add_argument("--bcConnStd", type=float, required=False, help="Divergence of Border cell connection to E cells (does not apply to predef weights)")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 parser.add_argument("--inputStartTime", type=float, required=True, help="Determines when the place or border cells become active.")
 (o, args) = parser.parse_args()
@@ -31,24 +32,21 @@ d = DataStorage.open(output_fname, 'w')
 d['trials'] = []
 
 #create borders
-startPos_x = [-90.0, 90.0, 90.0,-90.0]
-startPos_y = [ 90.0, 90.0,-90.0,-90.0]
-endPos_x   = [ 90.0, 90.0,-90.0,-90.0]
-endPos_y   = [ 90.0,-90.0,-90.0, 90.0]
+startPos_x = [-90.0,  0.0]
+startPos_y = [  0.0, 90.0]
+endPos_x   = [ 90.0,  0.0]
+endPos_y   = [  0.0,-90.0]
+directions = ['N','E','S','W']
 arena_borders = zip(zip(startPos_x,startPos_y),zip(endPos_x,endPos_y))
 
 # create bump start positions for each iteration
-bump_pos_x = [ 0.0,  0.0,  0.0,  0.0, 85.0, 80.0, 75.0, 70.0]
-bump_pos_y = [85.0, 80.0, 75.0, 70.0,  0.0,  0.0,  0.0,  0.0]
-#bump_pos_x = [ 0.0,  0.0,  0.0,  0.0,  5.0, 10.0, 15.0, 20.0]
-#bump_pos_y = [ 5.0, 10.0, 15.0, 20.0,  0.0,  0.0,  0.0,  0.0]
+bump_pos_x = [ 0.0,  0.0,  0.0,  0.0,  5.0, 10.0, 15.0, 20.0]
+bump_pos_y = [ 5.0, 10.0, 15.0, 20.0,  0.0,  0.0,  0.0,  0.0]
 
 # create constant rat positions for each iteration
-rat_pos_x = [  0.0,  0.0,  0.0,  0.0, 90.0, 90.0, 90.0, 90.0]
-rat_pos_y = [ 90.0, 90.0, 90.0, 90.0,  0.0,  0.0,  0.0,  0.0]
-#rat_pos_x = [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
-#rat_pos_y = [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
-rat_dt=20.0
+rat_pos_x = [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+rat_pos_y = [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+rat_dt = 20.0
 
 overalT = 0.
 stop = False
@@ -84,12 +82,11 @@ for trial_idx in range(o.ntrials):
     # border cells
     if o.bcON:
         borders= arena_borders[0] if trial_idx < 4 else arena_borders[1]
+        dirs = directions[0] if trial_idx < 4 else directions[1]
         ei_net.create_border_cells(borders=[borders], N_per_border=o.bcNum, posIn=rat_pos, start=o.inputStartTime)
         # connect border cells according to chosen method
-        if o.bcConnMethod == "line":
-            ei_net.connect_border_cells_line_method(o.bc_conn_weight)
-        elif o.bcConnMethod == "place":
-            ei_net.connect_border_cells_modified_place_cell_method(o.bc_conn_weight)
+        if o.bcConnMethod == "place":
+            ei_net.connect_border_cells_modified_place_cell_method([dirs], o.bc_conn_weight, o.bcConnStd)
         elif o.bcConnMethod == "predef":
             ei_net.connect_border_cells_predefined_weights(o.bc_conn_weight)
         elif o.bcConnMethod == "none":

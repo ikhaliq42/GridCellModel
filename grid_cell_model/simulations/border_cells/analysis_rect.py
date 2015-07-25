@@ -11,7 +11,7 @@ from matplotlib.pyplot import (figure, plot, pcolormesh, subplot2grid, savefig,
         colorbar, axis, xlabel, ylabel)
 
 from gridcells.analysis import information_specificity
-from grid_cell_model.analysis.grid_cells import (SNSpatialRate2DRect, cellGridnessScoreRect)
+from grid_cell_model.analysis.grid_cells import SNSpatialRate2DRect, cellGridnessScoreRect
 
 parser = argparse.ArgumentParser()
 parser.add_argument("sim_name", type=str, help="directory path of simulation data")
@@ -50,7 +50,7 @@ sim_dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
 theta_start_t = float(np.array(data['trials'][str(trial_no)]['options']['theta_start_t']))
 gridSep = float(np.array(data['trials'][str(trial_no)]['options']['gridSep']))
 # data path
-data_path = '/trials/0/'+spike_mon_type+'/events/'
+data_path = '/trials/'+str(trial_no)+'/'+spike_mon_type+'/events/'
 
 # calculate rate map if not already present in data, otherwise load from data
 if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \

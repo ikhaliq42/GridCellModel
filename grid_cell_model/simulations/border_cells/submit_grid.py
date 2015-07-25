@@ -18,6 +18,8 @@ parser.add_argument("--bcON", type=int, choices=[0, 1], default=0, help="Border 
 parser.add_argument("--bcNum", type=int, required=False, help="Number of border cells per border")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=1, help="Get connection matrices?")
 parser.add_argument("--bcConnMethod", type=str, default="place", help="Border cell connect method; default = predef")
+parser.add_argument("--bcConnStd", type=float, required=False, help="Divergence of Border cell connection to E cells (does not apply to predef weights)")
+parser.add_argument("--bcMargin", type=float, required=False, help="Arena margin where border cells have maximum activtiy, default is zero")
 parser.add_argument("--strongBorder", type=int, choices=[0, 1], default=0, help="Very Strong border input on?")
 #parser.add_argument('--Ivel', type=float,
 #                    help='Velocity input (pA). Default is 50 pA.')
@@ -30,12 +32,14 @@ p['time']                   = 10e3 if o.time is None else o.time  # ms
 p['nthreads']               = o.nthreads
 p['verbosity']              = o.verbosity
 p['pcON']                   = o.pcON
-p['spcON']                   = o.spcON
+p['spcON']                  = o.spcON
 p['bcON']                   = o.bcON
 p['velON']                  = o.velON
 p['bcNum']                  = dp['bc_N_per_border'] if o.bcNum is None else o.bcNum
 p['getConnMatrices']        = o.getConnMatrices
 p['bcConnMethod']           = o.bcConnMethod
+p['bcConnStd']              = dp['gridSep'] / 2. / 6. if o.bcConnStd is None else o.bcConnStd
+p['bcMargin']               = 0.0 if o.bcMargin is None else o.bcMargin
 #p['Ivel']                   = 50. if o.Ivel is None else o.Ivel  # mA
 if o.strongBorder==1:
     p['bc_max_rate']            = 100.0

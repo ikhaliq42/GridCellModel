@@ -67,7 +67,7 @@ for trial_no in range(ntrials):
     # *****************************************************************************************
 
     # other parameters
-    winLen = 1.0
+    winLen = 1000
     data_path_e = '/trials/'+str(trial_no)+'/spikeMon_e/events/'
     data_path_b = '/trials/'+str(trial_no)+'/spikeMon_b/events/'
 
