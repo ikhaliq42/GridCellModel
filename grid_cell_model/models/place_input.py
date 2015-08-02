@@ -141,11 +141,14 @@ if __name__=="__main__":
     arenaSize = 180.
     gridsep = 70            # cm
     gridCenter = [0, 0]
-    pc = PlaceCellInput(Ne_x, Ne_y, arenaSize, gridsep, gridCenter)
-    #pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
-    #pcolormesh(pc.arena); axis('equal'); show()
-    #pcolormesh(pc.getSheetInput(.0, .0)); show()
-    pcolormesh(pc.getSheetInputTruncated(.0, .0, 'E')); show()
+    sigma_x = 7.0; sigma_y = 7.0; corr = 0.0
+    sigma_xy = sigma_x * sigma_y * corr
+    sigma = np.array([[sigma_x ** 2, sigma_xy],[sigma_xy, sigma_y ** 2]])
+    pc = PlaceCellInput(Ne_x, Ne_y, arenaSize, gridsep, gridCenter, sigma)
+    pcolormesh(pc.X, pc.Y, pc.arena); axis('equal'); show()
+    pcolormesh(pc.arena); axis('equal'); show()
+    pcolormesh(pc.getSheetInput(.0,30.0)); show()
+    #pcolormesh(pc.getSheetInputTruncated(.0, .0, 'E')); show()
     
     vel_fname = '../../data/hafting_et_al_2005/rat_trajectory_lowpass.mat'
     ratData = loadmat(vel_fname)

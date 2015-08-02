@@ -24,6 +24,7 @@ parser.add_argument("--bcConnMethod", type=str, default="place", help="Border ce
 parser.add_argument("--bcConnStd", type=float, required=False, help="Divergence of Border cell connection to E cells (does not apply to predef weights)")
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 parser.add_argument("--inputStartTime", type=float, required=True, help="Determines when the place or border cells become active.")
+parser.add_argument("--experiment_no", type=int, default=0, help="Select which predefined experiment to run")
 (o, args) = parser.parse_args()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
@@ -52,7 +53,8 @@ overalT = 0.
 stop = False
 ###############################################################################
 seed_gen = TrialSeedGenerator(int(o.master_seed))
-for trial_idx in range(o.ntrials):
+exp_no = o.experiment_no
+for trial_idx in range(10):
     seed_gen.set_generators(trial_idx)  # Each trial is reproducible
     d['master_seed'] = int(o.master_seed)
     d['invalidated'] = 1
@@ -65,9 +67,9 @@ for trial_idx in range(o.ntrials):
         ei_net.setVelocityCurrentInput_e()
     
     # position inputs (constant)
-    bump_pos = ConstPosInputs(bump_pos_x[trial_idx], bump_pos_y[trial_idx])
-    posIn_x = [rat_pos_x[trial_idx]] * int(o.time / rat_dt)
-    posIn_y = [rat_pos_y[trial_idx]] * int(o.time / rat_dt)
+    bump_pos = ConstPosInputs(bump_pos_x[exp_no], bump_pos_y[exp_no])
+    posIn_x = [rat_pos_x[exp_no]] * int(o.time / rat_dt)
+    posIn_y = [rat_pos_y[exp_no]] * int(o.time / rat_dt)
     rat_pos = PosInputs(posIn_x, posIn_y, rat_dt)
     # place cells
     if o.pcON:
@@ -81,8 +83,8 @@ for trial_idx in range(o.ntrials):
 
     # border cells
     if o.bcON:
-        borders= arena_borders[0] if trial_idx < 4 else arena_borders[1]
-        dirs = directions[0] if trial_idx < 4 else directions[1]
+        borders= arena_borders[0] if exp_no < 4 else arena_borders[1]
+        dirs = directions[0] if exp_no < 4 else directions[1]
         ei_net.create_border_cells(borders=[borders], N_per_border=o.bcNum, posIn=rat_pos, start=o.inputStartTime)
         # connect border cells according to chosen method
         if o.bcConnMethod == "place":

@@ -15,14 +15,14 @@ parser.add_argument("sim_name", type=str, help="directory path of simulation dat
 parser.add_argument("--spike_mon_type", type=str, default='spikeMon_e')
 parser.add_argument("--neuron_idx", type=int, help="Index of neuron to analyse, default = 0", default=0)
 parser.add_argument("--trial_no", type=int, help="Trial number, default = 0", default=0)
-#parser.add_argument("--recalc", type=bool, help="Force recals, default = 0", default=0)
 args = parser.parse_args()
 
 bcConnStds          = [1.0, 2.0, 3.0, 4.0, 5.0]
 bc_field_stds       = [1.0, 5.0, 10.0, 15.0, 20.0]
-#results_G_i         = np.zeros((len(bcConnStds),len(bc_field_stds)))
-#results_crossCorr_i = np.zeros((len(bcConnStds),len(bc_field_stds)))
-#results_angles_i    = np.zeros((len(bcConnStds),len(bc_field_stds)))
+
+print("\n")
+print(args.sim_name)
+print "neuron index: " ,args.neuron_idx 
 
 for i in range(len(bcConnStds)):
 
@@ -35,25 +35,17 @@ for i in range(len(bcConnStds)):
         smoothingSigma=3.0
         sim_name = args.sim_name
         minGridnessT = 0.0
-        #args = parser.parse_args()
-        #recalc = args.recalc
         # open data file
         assert not (args.sim_name == "") 
         label = 'bcConnStd_{0}_bc_field_std_{1}'.format(int(bcConnStds[i]),int(bc_field_stds[j]))
-        data = h5py.File(args.sim_name + '/' + label + '/job00000_output.h5', 'r+')
+        data = h5py.File(args.sim_name + '/' + label + '/analysis.h5', 'r+')
+        sim_data = h5py.File(args.sim_name + '/' + label + '/job00000_output.h5', 'r+')
 
         # load simulation data
         print('\n'); print(label)
         print("Loading simulation data...")
-        #senders = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['senders'])
-        times = np.array(data['trials'][str(trial_no)][spike_mon_type]['events']['times'])
-        #rat_pos_x = np.array(data['trials'][str(trial_no)]['net_attr']['rat_pos_x'])
-        #rat_pos_y = np.array(data['trials'][str(trial_no)]['net_attr']['rat_pos_y'])
-        #rat_dt = float(np.array(data['trials'][str(trial_no)]['net_attr']['rat_dt']))
-        #sim_time = float(np.array(data['trials'][str(trial_no)]['options']['time']))
-        #sim_dt = float(np.array(data['trials'][str(trial_no)]['options']['sim_dt']))
-        #theta_start_t = float(np.array(data['trials'][str(trial_no)]['options']['theta_start_t']))
-        gridSep = float(np.array(data['trials'][str(trial_no)]['options']['gridSep']))
+        times = np.array(sim_data['trials'][str(trial_no)][spike_mon_type]['events']['times'])
+        gridSep = float(np.array(sim_data['trials'][str(trial_no)]['options']['gridSep']))
         
         # data path
         data_path = '/trials/'+str(trial_no)+'/'+spike_mon_type+'/events/'
@@ -71,9 +63,6 @@ for i in range(len(bcConnStds)):
         lastSpikeT = times[-1] if len(times) != 0 else np.nan
         if lastSpikeT >= minGridnessT:
             pass
-            #print "\ngridness score = " , G_i
-            #print "gridness correlation = " , crossCorr_i
-            #print "gridness angles = " , angles_i
         else:
             #print "Simulation too short, Gridness score NaN"
             G_i         = np.nan

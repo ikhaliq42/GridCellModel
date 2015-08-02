@@ -21,6 +21,10 @@ args = parser.parse_args()
 bcConnStds    = [1.0, 2.0, 3.0, 4.0, 5.0]
 bc_field_stds = [1.0, 5.0, 10.0, 15.0, 20.0]
 
+print("\n")
+print(args.sim_name)
+print "neuron index: ", args.neuron_idx 
+
 for i in range(len(bcConnStds)):
 
     for j in range(len(bc_field_stds)):
@@ -38,6 +42,7 @@ for i in range(len(bcConnStds)):
         assert not (args.sim_name == "") 
         label = 'bcConnStd_{0}_bc_field_std_{1}'.format(int(bcConnStds[i]),int(bc_field_stds[j]))
         data = h5py.File(args.sim_name + '/' + label + '/job00000_output.h5', 'r+')
+        output = h5py.File(args.sim_name + '/' + label + '/analysis.h5')
 
         # load simulation data
         print('\n'); print(label)
@@ -55,8 +60,8 @@ for i in range(len(bcConnStds)):
         data_path = '/trials/'+str(trial_no)+'/'+spike_mon_type+'/events/'
 
         # calculate rate map if not already present in data, otherwise load from data
-        if ('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
-                      data['trials'][str(trial_no)][spike_mon_type]['events'] or recalc: 
+        if True: #('analysis/neuron_' + str(neuron_idx) + '/rateMap') not in \
+                #      output['trials'][str(trial_no)][spike_mon_type]['events'] or recalc: 
             # extract single neuron spike times
             spikes = np.extract(senders == neuron_idx, times)
              
@@ -67,17 +72,17 @@ for i in range(len(bcConnStds)):
             X, Y = np.meshgrid(xedges, yedges)
             rateMap *= 1e3 # should be Hz
             if recalc: 
-                del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap']
-                del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/X']
-                del data[data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y']
-            data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap', data=rateMap)
-            data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X', data=X)
-            data.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y', data=Y)
+                del output[data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap']
+                del output[data_path + 'analysis/neuron_' +str(neuron_idx) + '/X']
+                del output[data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y']
+            output.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap', data=rateMap)
+            output.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X', data=X)
+            output.create_dataset(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y', data=Y)
         else:
-            print("\nRate map already exists - loading. (Use--recalc=1 to overwrite.)")
-            rateMap = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap'))
-            X = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X'))
-            Y = np.array(data.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y'))
+            print("\nRate map already exists - skipping. (Use--recalc=1 to overwrite.)")
+            #rateMap = np.array(output.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/rateMap'))
+            #X = np.array(output.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/X'))
+            #Y = np.array(output.get(data_path + 'analysis/neuron_' +str(neuron_idx) + '/Y'))
 
         # close data file
         data.close()
