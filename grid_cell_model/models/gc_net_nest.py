@@ -11,7 +11,7 @@ import nest
 from . import gc_neurons
 from .gc_net import GridCellNetwork
 from .place_input import PlaceCellInput
-from .place_cells import UniformBoxPlaceCells, BoxOutlinePlaceCells
+from .place_cells import UniformBoxPlaceCells, BoxOutlinePlaceCells, CentredPlaceCells
 from ..data_storage import DataStorage
 from ..analysis.geometry import (scaleLine, Position2D,
                                 bounding_box_dimensions)
@@ -553,7 +553,7 @@ class NestGridCellNetwork(GridCellNetwork):
             gcnLogger.debug("Init place cells: start: {0}, end: {1}".format(
                 0, self.no.theta_start_t))
             self.PC_start, _, _ = self.createGenericPlaceCells(
-                self.no.N_place_cells,
+                self.no.N_start_place_cells,
                 self.no.pc_start_max_rate,
                 self.no.pc_start_conn_weight,
                 start=0.0,
@@ -604,7 +604,6 @@ class NestGridCellNetwork(GridCellNetwork):
         if posIn is None:
             self._loadRatVelocities()
             posIn = PosInputs(self.rat_pos_x, self.rat_pos_y, self.rat_dt)
-
         if N != 0:
             gcnLogger.info('Setting up generic place cells')
             if boxSize==None:
@@ -614,6 +613,9 @@ class NestGridCellNetwork(GridCellNetwork):
                                         self.no.pc_field_std, random=False)
             if distribution == 'box_outline':
                 PCHelper = BoxOutlinePlaceCells(boxSize, (N, N), maxRate,
+                                        self.no.pc_field_std)
+            if distribution == 'centred':
+                PCHelper = CentredPlaceCells(boxSize, (N, N), maxRate,
                                         self.no.pc_field_std)
             NTotal = PCHelper.centers.shape[0]
 

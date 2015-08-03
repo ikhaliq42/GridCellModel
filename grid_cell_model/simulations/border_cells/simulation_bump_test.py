@@ -71,16 +71,17 @@ for trial_idx in range(10):
     posIn_x = [rat_pos_x[exp_no]] * int(o.time / rat_dt)
     posIn_y = [rat_pos_y[exp_no]] * int(o.time / rat_dt)
     rat_pos = PosInputs(posIn_x, posIn_y, rat_dt)
-    # place cells
-    if o.pcON:
-        # activate place cells (including start place cells))
-        ei_net.setPlaceCells(posIn=rat_pos,start=o.inputStartTime)
-        
+    
     # start place cells
     if o.spcON:
-        # activate start place cells only
+        # activate start place cells
         ei_net.setStartPlaceCells(bump_pos) 
-
+    
+    # place cells
+    if o.pcON:
+        # activate place cells (including start place cells if not already activated))
+        ei_net.setPlaceCells(posIn=rat_pos,start=o.inputStartTime, distribution='centred')
+        
     # border cells
     if o.bcON:
         borders= arena_borders[0] if exp_no < 4 else arena_borders[1]

@@ -119,6 +119,7 @@ defaultParameters = {
         "pc_max_rate"           :   50.0,         # Hz
         "pc_conn_weight"        :   0.5,          # nS
         "pc_field_std"          :   20.0,         # cm
+        "N_start_place_cells"   :   30,           # sqrt(total PC number)
         "pc_start_max_rate"     :   100.0,        # Hz
         "pc_start_conn_weight"  :   5.0,          # nS
         "pc_distribution"       :   'uniform',

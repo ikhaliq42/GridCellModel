@@ -167,7 +167,7 @@ class UniformBoxPlaceCells(PlaceCells):
 
 class BoxOutlinePlaceCells():
     '''
-    Similr to UniformBoxPlaceCells but only the outer perimeter.
+    Similar to UniformBoxPlaceCells but only the outer perimeter.
     '''
 
     def __init__(self, boxSize, N, maxRates, widths):
@@ -197,6 +197,30 @@ class BoxOutlinePlaceCells():
         cy_left   = np.linspace(-self.boxSize[1]/2.0, self.boxSize[1]/2.0, N[1])
         ctr_y     = np.hstack((cy_top, cy_right[range(1,N[1]-1)], 
                                     cy_bottom, cy_left[range(1,N[1]-1)]))
+        
+        self.centers = np.vstack((ctr_x, ctr_y)).T
+
+class CentredPlaceCells():
+    '''
+    Place cells which are all located in the centre of the arena.
+    '''
+
+    def __init__(self, boxSize, N, maxRates, widths):
+        '''
+        N        A tuple containing number of place cells in each dimension (X, Y) 
+        boxSize  Tuple showing arena dimensions, x then y
+        maxRates An array of size Nx*Ny specifying max. firing rate in the place
+                    field.
+        widths   An array of widths of place fields (they are circular)
+        random   Uniform, but from a random distribution?
+        '''
+        self.boxSize = boxSize
+
+        if (boxSize[0] <= 0 or boxSize[1] <= 0):
+            raise Exception('boxSize dimenstions must be positive!')
+            
+        ctr_x = np.array([0.0] * N[0])
+        ctr_y = np.array([0.0] * N[1])
         
         self.centers = np.vstack((ctr_x, ctr_y)).T
 

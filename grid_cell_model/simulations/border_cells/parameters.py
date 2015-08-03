@@ -127,6 +127,7 @@ class ParameterSelector(object):
         self.parser.add_argument("--pc_max_rate",          type=float,  help="Place cell maximal firing rate (Hz)")
         self.parser.add_argument("--pc_field_std",         type=float,  help="Std. deviation of the Gaussian specifying the place field size (cm)")
         self.parser.add_argument("--pc_conn_weight",       type=float,  help="Connection weight from each place to grid cells (nS)")
+        self.parser.add_argument("--N_start_place_cells",  type=int,    help="Number of start place cells connected to grid cells in one dimension. The total number of place cells will be the square of this parameter.")
         self.parser.add_argument("--pc_start_max_rate",    type=float,  help="Init place cell maximal firing rate (Hz)")
         self.parser.add_argument("--pc_start_conn_weight", type=float,  help="Connection weight from each initialisation place cell to grid cells (nS)")
         self.parser.add_argument("--pc_distribution",      type=str,    help="Determines the way place cell centres are distributed in terms of the arena")
