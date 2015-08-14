@@ -1,7 +1,5 @@
 '''Main simulation run: Run a test simulation using rat trajectory data
 
-This simulation will overwrite any old files that are present in the output
-directory.
 '''
 from __future__ import absolute_import, print_function, division
 
@@ -26,8 +24,9 @@ parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, he
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
                                                    o.fileNamePrefix, o.job_num)
-d = DataStorage.open(output_fname, 'w')
-d['trials'] = []
+d = DataStorage.open(output_fname,'a')
+if 'trials' not in d:
+	d['trials'] = []
 
 #create borders
 mrg = o.bcMargin
@@ -42,14 +41,14 @@ overalT = 0.
 stop = False
 ###############################################################################
 seed_gen = TrialSeedGenerator(int(o.master_seed))
-for trial_idx in range(o.ntrials):
+for trial_idx in range(len(d['trials']), o.ntrials):
     seed_gen.set_generators(trial_idx)  # Each trial is reproducible
-    d['master_seed'] = int(o.master_seed)
-    d['invalidated'] = 1
+    if 'master_seed' not in d: d['master_seed'] = int(o.master_seed)
+    if 'invalidated' not in d: d['invalidated'] = 1
 
     #const_v = [0.0, -o.Ivel]
     ei_net = BasicGridCellNetwork(o, simulationOpts=None)
-    d['net_params'] = ei_net.getNetParams()  # Common settings will stay
+    if 'net_params' not in d: d['net_params'] = ei_net.getNetParams()  # Common settings will stay
 
     # turn velocity inputs on
     if o.velON:

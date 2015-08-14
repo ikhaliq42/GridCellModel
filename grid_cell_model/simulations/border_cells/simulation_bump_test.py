@@ -13,6 +13,7 @@ from grid_cell_model.models.gc_net_nest import BasicGridCellNetwork, ConstPosInp
 from grid_cell_model.models.seeds import TrialSeedGenerator
 from grid_cell_model.data_storage import DataStorage
 import numpy as np
+import random
 
 parser = getOptParser()
 parser.add_argument("--velON", type=int, choices=[0, 1], default=0, help="Velocity inputs ON?")
@@ -25,6 +26,8 @@ parser.add_argument("--bcConnStd", type=float, required=False, help="Divergence 
 parser.add_argument("--getConnMatrices", type=int, choices=[0, 1], default=0, help="Get connection matrices?")
 parser.add_argument("--inputStartTime", type=float, required=True, help="Determines when the place or border cells become active.")
 parser.add_argument("--experiment_no", type=int, default=0, help="Select which predefined experiment to run")
+parser.add_argument("--random_starts", type=int, default=0, help="Use a random initialisation in a 30cm box around centre")
+parser.add_argument("--border_type", type=str, default='horizontal', help="choose vertical or horizontal border")
 (o, args) = parser.parse_args()
 
 output_fname = "{0}/{1}job{2:05}_output.h5".format(o.output_dir,
@@ -54,7 +57,7 @@ stop = False
 ###############################################################################
 seed_gen = TrialSeedGenerator(int(o.master_seed))
 exp_no = o.experiment_no
-for trial_idx in range(10):
+for trial_idx in range(o.ntrials):
     seed_gen.set_generators(trial_idx)  # Each trial is reproducible
     d['master_seed'] = int(o.master_seed)
     d['invalidated'] = 1
@@ -67,11 +70,18 @@ for trial_idx in range(10):
         ei_net.setVelocityCurrentInput_e()
     
     # position inputs (constant)
-    bump_pos = ConstPosInputs(bump_pos_x[exp_no], bump_pos_y[exp_no])
-    posIn_x = [rat_pos_x[exp_no]] * int(o.time / rat_dt)
-    posIn_y = [rat_pos_y[exp_no]] * int(o.time / rat_dt)
+    if o.random_starts == 1:
+        random.seed(o.experiment_no)
+        bump_pos = ConstPosInputs(random.uniform(-30,30), random.uniform(-30,30))
+        posIn_x = [rat_pos_x[0]] * int(o.time / rat_dt)
+        posIn_y = [rat_pos_y[0]] * int(o.time / rat_dt)
+    else:
+        bump_pos = ConstPosInputs(bump_pos_x[exp_no], bump_pos_y[exp_no])
+        posIn_x = [rat_pos_x[exp_no]] * int(o.time / rat_dt)
+        posIn_y = [rat_pos_y[exp_no]] * int(o.time / rat_dt)
     rat_pos = PosInputs(posIn_x, posIn_y, rat_dt)
     
+    #import pdb; pdb.set_trace();
     # start place cells
     if o.spcON:
         # activate start place cells
@@ -84,8 +94,18 @@ for trial_idx in range(10):
         
     # border cells
     if o.bcON:
-        borders= arena_borders[0] if exp_no < 4 else arena_borders[1]
-        dirs = directions[0] if exp_no < 4 else directions[1]
+        if o.random_starts == 1: 
+            if o.border_type == 'horizontal':
+                borders = arena_borders[0]
+                dirs = directions[0]
+            elif o.border_type == 'vertical':
+                borders = arena_borders[1]
+                dirs = directions[1]
+            else:
+                borders = []
+        else:
+            borders = arena_borders[0] if exp_no < 4 else arena_borders[1]
+            dirs = directions[0] if exp_no < 4 else directions[1]
         ei_net.create_border_cells(borders=[borders], N_per_border=o.bcNum, posIn=rat_pos, start=o.inputStartTime)
         # connect border cells according to chosen method
         if o.bcConnMethod == "place":
