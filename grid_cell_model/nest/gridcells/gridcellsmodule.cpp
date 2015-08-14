@@ -37,6 +37,7 @@
 // include headers with your own stuff
 #include "gridcellsmodule.h"
 #include "place_cell_generator.h"
+#include "start_place_cell_generator.h"
 #include "border_cell_generator.h"
 #include "iaf_gridcells.h"
 
@@ -97,6 +98,9 @@ void mynest::GridCellsModule::init(SLIInterpreter *i, nest::Network*)
 {
     nest::register_model<place_cell_generator>(nest::NestModule::get_network(), 
             "place_cell_generator");
+			
+    nest::register_model<start_place_cell_generator>(nest::NestModule::get_network(), 
+            "start_place_cell_generator");
 
 	nest::register_model<border_cell_generator>(nest::NestModule::get_network(),
 		"border_cell_generator");

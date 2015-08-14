@@ -558,7 +558,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 self.no.pc_start_conn_weight,
                 start=0.0,
                 end=self.no.theta_start_t,
-                posIn=posIn)
+                posIn=posIn, place_type='start_place_cell_generator')
         else:
             gcnLogger.info('Initialization place cells already set. Skipping '
                            'the set up')
@@ -591,12 +591,14 @@ class NestGridCellNetwork(GridCellNetwork):
                                                      boxSize=boxSize)
 
     def createGenericPlaceCells(self, N, maxRate, weight, start=None, end=None,
-                                posIn=None, distribution='uniform', boxSize=None):
+                                posIn=None, distribution='uniform', boxSize=None, place_type=None):
         '''
         Generate place cells and connect them to grid cells. The wiring is
         fixed, and there is no plasticity. This method can be used more than
         once, to set up different populations of place cells.
         '''
+        if place_type == None:
+            place_type = 'place_cell_generator'
         if start is None:
             start = self.no.theta_start_t
         if end is None:
@@ -618,8 +620,7 @@ class NestGridCellNetwork(GridCellNetwork):
                 PCHelper = CentredPlaceCells(boxSize, (N, N), maxRate,
                                         self.no.pc_field_std)
             NTotal = PCHelper.centers.shape[0]
-
-            PC = nest.Create('place_cell_generator', NTotal,
+            PC = nest.Create(place_type, NTotal,
                              params={'rate'      : maxRate,
                                      'field_size': self.no.pc_field_std,
                                      'start'     : start,

@@ -71,7 +71,7 @@ class PlaceCellInput(object):
         
         X_mod = np.abs(np.mod(X - self.gridsep_x/2 - gridCenter[0], self.gridsep_x) - self.gridsep_x/2)
         Y_mod = np.abs(np.mod(Y - self.gridsep_y/2 - gridCenter[1], self.gridsep_y) - self.gridsep_y/2)
-        #arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)	
+        #arena1 = np.exp(-(X_mod**2 + Y_mod**2)/2/self.sigma**2)
         arena1 = np.zeros(X_mod.shape)
         for i in range(X_mod.shape[0]):
             for j in range(X_mod.shape[1]):
@@ -80,7 +80,7 @@ class PlaceCellInput(object):
         
         shift_x = self.gridsep_x*np.cos(np.pi/3)
         shift_y = self.gridsep_x*np.sin(np.pi/3)
-        #arena2 = np.exp(-( (X_mod - shift_x)**2 + (Y_mod-shift_y)**2)/2/self.sigma**2)
+        #arena2 = np.exp(-( (X_mod - shift_x)**2 + (Y_mod-shift_y)**2)/2/self.sigma**2)	
         arena2 = np.zeros(X_mod.shape)
         for i in range(X_mod.shape[0]):
             for j in range(X_mod.shape[1]):

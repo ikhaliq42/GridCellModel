@@ -38,7 +38,7 @@ from scipy    import weave
 import numpy as np
 import scipy.optimize
 
-from . import spikes
+import spikes
 
 
 logger = logging.getLogger(__name__)

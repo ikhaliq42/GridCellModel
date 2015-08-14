@@ -43,7 +43,11 @@ namespace mynest {
  * Currently the models provided are
  *  1. *iaf_gridcells* -- Exponential integrate and fire neuron with after-spike
  *        hyperpolarisation conductance, AMPA, NMDA-like and GABA_A synapses
- *  1. *place_cell_generator * -- a simple model that simulates place cell
+ *  2. *place_cell_generator * -- a simple model that simulates place cell
+ *        firing fields. It a non-homogeneous Poisson process, in which the mean
+ *        firing rate changes as a Gaussian function of a 2D environment
+ *  3. *start_place_cell_generator * -- identical to place_celL_generator
+ *  4. *border_cell_generator * -- a simple model that simulates border cell
  *        firing fields. It a non-homogeneous Poisson process, in which the mean
  *        firing rate changes as a Gaussian function of a 2D environment
  */
